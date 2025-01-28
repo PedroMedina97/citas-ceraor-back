@@ -1,0 +1,67 @@
+<?php
+
+namespace Abstracts;
+
+use Utils\Helpers;
+
+abstract class Entity
+{
+
+    public function getAll(string $name_table, string $data = null)
+    {
+        return Helpers::getAllAtributes($name_table, $data);
+    }
+
+    public function getById(String $name_table, Int $id)
+    {
+        return Helpers::getById($name_table, $id);
+    }
+
+    public function create(string $name_table, $atributes)
+    {
+        return Helpers::insert($name_table, $atributes);
+    }
+
+    public function update(string $name_table, $atributes, int $id)
+    {
+        return Helpers::update($name_table, $atributes, $id);
+    }
+
+    public function delete(string $name_table, int $id)
+    {
+        return Helpers::destroy($name_table, $id);
+    }
+
+    public function search(string $name_table, array $cols, string $data)
+    {
+        return Helpers::search($name_table, $cols, $data);
+    }
+
+    public function myQuery($name_class,$name_method)
+    {
+        if(method_exists($name_class, $name_method) && !is_array($name_class)){
+            $name_class();
+        }else{
+            return $name_class;
+            /* die(); */
+        }   
+    }
+
+    public static function sendQuery($parameter)
+    {
+        /* var_dump($parameter);
+        die(); */
+        $sql = Helpers::connect()->query($parameter);
+        $query = $sql->fetch_all(MYSQLI_ASSOC);
+        return $query;
+    }
+
+    public static function insertQuery($parameter)
+    {   
+        /* var_dump($parameter);
+        die(); */
+        $sql = Helpers::connect()->query($parameter);
+        return $sql;
+    }
+    
+}
