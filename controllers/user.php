@@ -12,200 +12,131 @@ $instance = new User();
 $auth = new Auth();
 $name_table = "users";
 $response = null;
-$token == null;
 
+// Obtener el token del encabezado Authorization
+$token = isset(getallheaders()['Authorization']) ? getallheaders()['Authorization'] : null;
 
-/* $token = isset(getallheaders()['Authorization']) ? getallheaders()['Authorization'] : null;
-
+// Decodificar el token si existe
 $decoded = !is_null($token) ? $auth->verifyToken($token) : null;
-var_dump($decoded);
-die(); */
 
+// Ruta y método de la solicitud
+$method = $_SERVER['REQUEST_METHOD'];
+$path = isset($router) ? $router->getMethod() : null;
 
+// Verificar si la ruta es diferente de "login"
+if ($path !== 'login') {
+    // Si el token no existe o no es válido, regresar "401 No autorizado"
+    if (is_null($token) || is_null($decoded)) {
+        HTTPStatus::setStatus(401);
+        $response = [
+            "status" => false,
+            "msg" => "No autorizado"
+        ];
+        echo json_encode($response);
+        exit();
+    }
+}
 
-
-switch ($_SERVER['REQUEST_METHOD']) {
+// Lógica principal del controlador
+switch ($method) {
     case 'GET':
-        echo ("entra");
-         if (!is_null($token) && !is_null($decoded)) {
+        if (!is_null($token) && !is_null($decoded)) {
             if (!empty($getallUserPermissions) && in_array("getall_user", $getallUserPermissions)) {
                 $controller->get($instance, $name_table);
             } elseif (!empty($getUserPermissions) && in_array("get_user", $getUserPermissions)) {
-                $id = isset($router) ? $router->getParam() : null; // Assuming the ID comes from router parameters
+                $id = isset($router) ? $router->getParam() : null;
                 if ($id) {
                     $data = $instance->getUsersbyParentId($id);
-                    if ($data) { 
+                    if ($data) {
                         HTTPStatus::setStatus(200);
-                        $message = HTTPStatus::getMessage(200);
                         $response = [
                             "status" => true,
                             "data" => $data,
-                            "msg" => $message
+                            "msg" => HTTPStatus::getMessage(200)
                         ];
                     } else {
                         HTTPStatus::setStatus(404);
-                        $message = HTTPStatus::getMessage(404);
                         $response = [
                             "status" => false,
-                            "msg" => $message
+                            "msg" => HTTPStatus::getMessage(404)
                         ];
                     }
-                    echo json_encode($response);
                 } else {
                     HTTPStatus::setStatus(400);
-                    $message = HTTPStatus::getMessage(400);
                     $response = [
                         "status" => false,
                         "msg" => "Parent ID is required for get_user permission"
                     ];
-                    echo json_encode($response);
                 }
+                echo json_encode($response);
             } else {
                 HTTPStatus::setStatus(403);
-                $message = HTTPStatus::getMessage(403);
                 $response = [
                     "status" => false,
                     "msg" => "Permission denied"
                 ];
                 echo json_encode($response);
             }
-        } else {
-            HTTPStatus::setStatus(401);
-            $message = HTTPStatus::getMessage(401);
-            $response = [
-                "status" => false,
-                "msg" => $message
-            ];
-            echo json_encode($response);
         }
         break;
 
     case 'POST':
-        switch ($router->getMethod()) {
+        switch ($path) {
             case 'login':
                 $email = $body['email'];
                 $password = $body['password'];
                 $data = $instance->login($email, $password);
                 if ($data) {
-                    $response = array(
+                    $response = [
                         "status" => "success",
                         "email" => $email,
                         "token" => $data['token']
-                    );
-                    echo json_encode($response);
+                    ];
                 } else {
                     HTTPStatus::setStatus(401);
-                    $response = array(
+                    $response = [
                         "status" => "false",
-                        "msg" => "Credenciales no Válidas",
-                        "token" => $data
-                    );
-                    echo json_encode($response);
+                        "msg" => "Credenciales no válidas"
+                    ];
                 }
+                echo json_encode($response);
                 break;
 
             case 'register':
-                /* var_dump($body);
-                    die(); */
                 $name = $body['name'];
                 $lastname = $body['lastname'];
                 $email = $body['email'];
                 $password = $body['password'];
                 $birthday = $body['birthday'];
-                $data = $instance->insertUser($name, $lastname, $email, $password,  $birthday);
-                /* var_dump($data);
-                die(); */
-                if ($data) {
-                    HTTPStatus::setStatus(201);
-                    $message = HTTPStatus::getMessage(201);
-                    $response = [
-                        "status" => true,
-                        "data" => $data,
-                        "msg" => $message
-                    ];
-                    /*  echo json_encode($response); */
-                } else {
-                    HTTPStatus::setStatus(404);
-                    $message = HTTPStatus::getMessage(404);
-                    $response = [
-                        "status" => true,
-                        "data" => $data,
-                        "msg" => $message
-                    ];
-                    /*  echo json_encode($response); */
-                }
+                $data = $instance->insertUser($name, $lastname, $email, $password, $birthday);
+                HTTPStatus::setStatus($data ? 201 : 404);
+                $response = [
+                    "status" => (bool)$data,
+                    "data" => $data,
+                    "msg" => HTTPStatus::getMessage(HTTPStatus::getMessage($data ? 201 : 404))
+                ];
                 echo json_encode($response);
                 break;
 
-
-            case 'createUser':
-                $parent_id = $body['parent_id'];
-                $name = $body['name'];
-                $lastname = $body['lastname'];
-                $email = $body['email'];
-                $password = $body['password'];
-                $birthday = $body['birthday'];
-                $data = $instance->createUser($parent_id, $name, $lastname, $email, $password, $birthday);
-                if ($data) {
-                    HTTPStatus::setStatus(201);
-                    $message = HTTPStatus::getMessage(201);
-                    $response = [
-                        "status" => true,
-                        "data" => $data,
-                        "msg" => $message
-                    ];
-                } else {
-                    HTTPStatus::setStatus(406);
-                    $message = HTTPStatus::getMessage(406);
-                    $response = [
-                        "status" => false,
-                        "data" => $data,
-                        "msg" => $message
-                    ];
-                }
-                echo json_encode($response);
-
-                break;
             default:
-                "Método no definido para esta clase";
+                echo "Método no definido para esta clase";
+                break;
         }
         break;
 
     case 'PUT':
-        if (!empty($permissions[2])) {
-            $controller->put($instance, $name_table, $body);
-        } else {
-            HTTPStatus::setStatus(401);
-            $message = HTTPStatus::getMessage(401);
-            $response = [
-                "status" => false,
-                "msg" => $message
-            ];
-            echo json_encode($response);
-        }
+        $controller->put($instance, $name_table, $body);
         break;
 
     case 'DELETE':
-        if (!empty($permissions[3])) {
-            $data = $controller->delete($instance, $name_table);
-        } else {
-            $data = $controller->delete($instance, $name_table);
-            HTTPStatus::setStatus(401);
-            $message = HTTPStatus::getMessage(401);
-            $response = [
-                "status" => false,
-                "msg" => $message
-            ];
-            echo json_encode($response);
-        }
+        $controller->delete($instance, $name_table);
         break;
 
     default:
         HTTPStatus::setStatus(405);
-        $message = HTTPStatus::getMessage(405);
         $response = [
             "status" => false,
-            "msg" => $message
+            "msg" => HTTPStatus::getMessage(405)
         ];
         echo json_encode($response);
         break;

@@ -19,6 +19,7 @@
     "require": {
         "dompdf/dompdf": "^2.0",
         "easy-projects/simple-router": "^7.2",
-        "firebase/php-jwt": "^6.10"
+        "firebase/php-jwt": "^6.10",
+        "vlucas/phpdotenv": "^5.6"
     }
 }
