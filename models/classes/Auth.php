@@ -4,7 +4,6 @@ namespace Classes;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Utils\Env;
 use Classes\Rol;
 
 class Auth
@@ -13,8 +12,17 @@ class Auth
 
     public function __construct()
     {
-        $this->secret = Env::generatekey();
+        $this->secret = $this->generateKey();
     }
+
+
+    public static function generateKey()
+    { 
+        $word = 'S~£y8oS7=x6BRA4Ga1Ht~QsD';
+        $key = $word;
+        return $key;
+    }
+
 
     public function getToken($data)
     {
