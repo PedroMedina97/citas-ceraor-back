@@ -83,11 +83,10 @@ class Controller
     }
 
 
-    public function put(object $nameClass, $name_table, $content)
+    public function update(object $nameClass, $name_table, $content)
     {
         $router = new Router();
         $parameter = $router->getParam();
-
         if (isset($content['image']) && isset($content['image']['tmp_name'])) {
             $file = new File();
             $base64_image = $file->read($content['image']['tmp_name'], $content['image']['type']);
@@ -95,15 +94,7 @@ class Controller
         }
 
         $data = $parameter ? $nameClass->update($name_table, $content, $parameter) : null;
-        $status = $data ? true : false;
-        $msg = $data ? "Actualizado correctamente" : "Error al actualizar fila(s)";
-        $response = [
-            "status" => $status ? "success" : "error",
-            "msg" => $msg,
-            "file" => $status ? true : false
-        ];
-        http_response_code($status ? 200 : 400);
-        echo json_encode($response);
+        return $data;
     }
 
 
@@ -112,13 +103,6 @@ class Controller
         $router = new Router();
         $parameter = $router->getParam();
         $data = $parameter ? $nameClass->delete($name_table, $parameter) : null;
-        $status = $data ? true : false;
-        $msg = $status ? "Eliminado Correctamente" : "No se pudo eliminar fila(s)";
-        $response = [
-            "status" => $status ? "success" : "error",
-            "msg" => $msg
-        ];
-        http_response_code($status ? 200 : 400);
-        echo json_encode($response);
+        return $data;
     }
 }

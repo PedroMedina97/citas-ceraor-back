@@ -9,19 +9,24 @@ use Classes\Rol;
 
 class Auth
 {
+    private $secret;
+
+    public function __construct()
+    {
+        $this->secret = Env::generatekey();
+    }
+
     public function getToken($data)
     {
-        $secret = Env::generatekey();
-        $token = JWT::encode($data, $secret, 'HS256');
+        $token = JWT::encode($data, $this->secret, 'HS256');
         return $token;
     }
 
     public function verifyToken($token)
     {
-        $secret = Env::generatekey();
         if(!is_null($token)){
             try {
-                $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+                $decoded = JWT::decode($token, new Key($this->secret, 'HS256'));
                 return $decoded;
             } catch (\Exception $e) {
                 return false;

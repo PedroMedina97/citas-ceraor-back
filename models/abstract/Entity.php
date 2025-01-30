@@ -12,9 +12,14 @@ abstract class Entity
         return Helpers::getAllAtributes($name_table, $data);
     }
 
-    public function getById(String $name_table, Int $id)
+    public function getById(String $name_table, String $id)
     {
         return Helpers::getById($name_table, $id);
+    }
+
+    public function getByParentId(string $name_table, string $column, string $id_related)
+    {
+        return Helpers::getByIdParent($name_table, $column, $id_related);
     }
 
     public function create(string $name_table, $atributes)
@@ -22,12 +27,12 @@ abstract class Entity
         return Helpers::insert($name_table, $atributes);
     }
 
-    public function update(string $name_table, $atributes, int $id)
+    public function update(string $name_table, $atributes, String $id)
     {
         return Helpers::update($name_table, $atributes, $id);
     }
 
-    public function delete(string $name_table, int $id)
+    public function delete(string $name_table, String $id)
     {
         return Helpers::destroy($name_table, $id);
     }

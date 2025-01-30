@@ -41,7 +41,6 @@ class User extends Entity
                 $id = $key->generate_uuid();
                 $query = "INSERT INTO users (id, parent_id, name, lastname, email, password, birthday, active, created_at, updated_at) VALUES ('$id', '-','$name', '$lastname', '$email', '$pass', '$birthday', 1, NOW(), NOW())";
                 $sql = $db->query($query);
-
                 if (!$sql) {
                     throw new \Exception(mysqli_error($db));
                 }
@@ -119,7 +118,7 @@ class User extends Entity
         $key = new Key();
         $id = $key->generate_uuid();
 
-        $query = "INSERT INTO users(id, id_rol, parent_id, name, lastname, email, password, birthday, active, created_at, updated_at) 
+        $query = "INSERT INTO users(id, parent_id, name, lastname, email, password, birthday, active, created_at, updated_at) 
         values('$id', '$parent_id', '$name', '$lastname', '$email', '$pass', '$birthday', 1, NOW(), NOW());";
         /* echo($query);
         die(); */

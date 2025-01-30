@@ -1,6 +1,7 @@
 <?php
 
 namespace Utils;
+
 use Exception;
 use mysqli;
 
@@ -16,14 +17,14 @@ class Helpers
         foreach ($atributes as $row => $value) {
             $items = [];
             foreach ($value as $item) {
-                if(is_numeric($item)){
-                    if(is_int($item)){
+                if (is_numeric($item)) {
+                    if (is_int($item)) {
                         intval($item);
-                    }else{
+                    } else {
                         floatval($item);
                     }
                     array_push($items, $item);
-                }else{
+                } else {
                     array_push($items, "'$item'");
                 }
             }
@@ -33,14 +34,14 @@ class Helpers
             /* var_dump($id);
             die(); */
             $query = "INSERT INTO $name_table VALUES ('$id', $data, 1, NOW(), NOW())";
-           /*  var_dump($query);
+            /*  var_dump($query);
             die(); */
             $sql = $db->query($query);
         }
         return $sql;
     }
 
-    public static function update(string $name_table, $atributes, int $id)
+    public static function update(string $name_table, $atributes, String $id)
     {
         global $db;
         $attr = [$atributes];
@@ -55,8 +56,8 @@ class Helpers
                 }
             }
             $data = implode(", ", $items);
-            $query = "UPDATE $name_table SET $data, updated_at= NOW() WHERE id= $id";
-           /*  var_dump($query); //DESCOMENTAR PARA VER LA CONSULTA A LA BASE DE DATOS
+            $query = "UPDATE $name_table SET $data, updated_at= NOW() WHERE id= '$id'";
+             /* echo($query);
             die(); */
             $sql = $db->query($query);
         }
@@ -93,53 +94,73 @@ class Helpers
         } else {
             $query .= "";
         }
-        $sql = $db->query($query.';');
+        $sql = $db->query($query . ';');
         $data = $sql->fetch_all(MYSQLI_ASSOC);
-      /*   var_dump($data);
+        /*   var_dump($data);
         die(); */
         return $data;
     }
 
-    public static function getById(string $name_table, int $id)
+    public static function getById(String $name_table, String $id)
     {
         global $db;
-        $sql = $db->query("SELECT * FROM $name_table WHERE id = $id");
+        $sql = $db->query("SELECT * FROM $name_table WHERE id = '$id'");
         return $sql->fetch_all(MYSQLI_ASSOC);
     }
 
-        public static function getByIdRelated(string $name_table, string $column, string $id_related)
-        {
-            global $db;
-            try {
-                $query = "SELECT * FROM $name_table WHERE id_$column= $id_related and active= 1";
-                /* var_dump($query);
+    public static function getByIdRelated(string $name_table, string $column, string $id_related)
+    {
+        global $db;
+        try {
+            $query = "SELECT * FROM $name_table WHERE id_$column= $id_related and active= 1";
+            /* var_dump($query);
                 die(); */
-                var_dump($query);
-                die();
-                $sql = $db->query($query);
-                $sql = $sql->fetch_all(MYSQLI_ASSOC);
-                if ($sql){
-                    return $sql;  
-                }else{
+            var_dump($query);
+            die();
+            $sql = $db->query($query);
+            $sql = $sql->fetch_all(MYSQLI_ASSOC);
+            if ($sql) {
+                return $sql;
+            } else {
+                return false;
+            }
+        } catch (Exception $e) {
+            echo 'Error: ',  $e->getMessage(), "\n";
+        }
+    }
+
+    public static function getByIdParent(string $name_table, string $column, string $id_related)
+    {
+        global $db;
+        try {
+            $query = "SELECT * FROM $name_table WHERE $column = $id_related AND active = 1";
+            $sql = $db->query($query);
+            
+            if ($sql !== false) {
+                $result = $sql->fetch_all(MYSQLI_ASSOC);
+                if (!empty($result)) {
+                    return $result;  
+                } else {
                     return false;
                 }
-            } catch (Exception $e) {
-                echo 'Error: ',  $e->getMessage(), "\n";
+            } else {
+                return false; // Regresa false si la consulta falla
             }
-            
+        } catch (Exception $e) {
+            echo 'Error: ',  $e->getMessage(), "\n";
+            return null; // Regresa null en caso de error
         }
-        public static function getByIdParent(string $name_table, string $column, string $id_related)
+    }
+    
+
+    /* public static function getByIdParent(string $name_table, string $column, string $id_related)
         {
             global $db;
             try {
                 $query = "SELECT * FROM $name_table WHERE $column= $id_related and active= 1";
-                /* var_dump($query);
-                die(); */
-                var_dump($query);
-                die();
                 $sql = $db->query($query);
                 $sql = $sql->fetch_all(MYSQLI_ASSOC);
-                if ($sql){
+                if ($sql->num_rows > 0){
                     return $sql;  
                 }else{
                     return false;
@@ -148,12 +169,12 @@ class Helpers
                 echo 'Error: ',  $e->getMessage(), "\n";
             }
             
-        }
+        } */
 
     public static function search(string $name_table, array $cols, string $query)
     {
         global $db;
-        $query = ("SELECT * FROM " . "v_".$name_table . " WHERE " . implode(' or ', $cols) . " LIKE '%" . $query . "%';");
+        $query = ("SELECT * FROM " . "v_" . $name_table . " WHERE " . implode(' or ', $cols) . " LIKE '%" . $query . "%';");
         /* var_dump($query);
         die(); */
         $sql = $db->query($query);
@@ -170,19 +191,20 @@ class Helpers
         return $data;
     }
 
-    public static function destroy(string $name_table, int $id)
+    public static function destroy(string $name_table, String $id)
     {
         /* echo "entra";
         die(); */
         global $db;
-        $query = "UPDATE $name_table set active= 0, updated_at= NOW() where id = $id";
-        /* var_dump($query);
+        $query = "UPDATE $name_table set active= 0, updated_at= NOW() where id = '$id'";
+    /*     echo($query);
         die(); */
         $sql = $db->query($query);
         return $sql;
     }
 
-    public static function uploadFile(){
+    public static function uploadFile()
+    {
         if ($_FILES) {
             if (move_uploaded_file($_FILES["file"]["tmp_name"], "uploads/images/" . $_FILES['file']['name'])) {
                 $url = "uploads/images/" . $_FILES['file']['name'];

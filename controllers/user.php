@@ -5,7 +5,6 @@ use Classes\Auth;
 use Classes\User;
 use Classes\Controller;
 use Classes\HTTPStatus;
-use Classes\Permission;
 
 $controller = new Controller();
 $instance = new User();
@@ -19,7 +18,13 @@ $token = isset(getallheaders()['Authorization']) ? getallheaders()['Authorizatio
 // Decodificar el token si existe
 $decoded = !is_null($token) ? $auth->verifyToken($token) : null;
 
-// Ruta y método de la solicitud
+$permissionsArray = [];
+if (!is_null($decoded) && isset($decoded->permissions->permissions)) {
+    $permissions = $decoded->permissions->permissions;
+    $permissionsArray = explode(",", $permissions);
+    $permissionsArray = array_map('trim', $permissionsArray);
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 $path = isset($router) ? $router->getMethod() : null;
 
@@ -37,46 +42,80 @@ if ($path !== 'login') {
     }
 }
 
-// Lógica principal del controlador
 switch ($method) {
     case 'GET':
-        if (!is_null($token) && !is_null($decoded)) {
-            if (!empty($getallUserPermissions) && in_array("getall_user", $getallUserPermissions)) {
-                $controller->get($instance, $name_table);
-            } elseif (!empty($getUserPermissions) && in_array("get_user", $getUserPermissions)) {
-                $id = isset($router) ? $router->getParam() : null;
-                if ($id) {
-                    $data = $instance->getUsersbyParentId($id);
+        switch ($path) {
+            case 'getall':
+                if (in_array('getall_user', $permissionsArray)) {
+                    $data = $instance->getAll('users');
+                    $response = [
+                        "status" => "success",
+                        "msg" => $data ? "Fila(s) o Elemento(s) encontrada(s)" : "Fila(s) o Elemento(s) no encontrada(s)",
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => "No autorizado"
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
+            case 'getbyid':
+                if (in_array('get_user', $permissionsArray)) {
+                    $id = $router->getParam();
+                    $data = $instance->getById('users', $id);
+                    $response = [
+                        "status" => "success",
+                        "msg" => $data ? "Fila(s) o Elemento(s) encontrada(s)" : "Fila(s) o Elemento(s) no encontrada(s)",
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => "No autorizado"
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
+            case 'getmyusers':
+                if(in_array('get_user', $permissionsArray)){
+                    $data = $instance->getByParentId('users', 'parent_id', $router->getParam());
                     if ($data) {
-                        HTTPStatus::setStatus(200);
                         $response = [
-                            "status" => true,
-                            "data" => $data,
-                            "msg" => HTTPStatus::getMessage(200)
+                            "status" => "success",
+                            "msg" => "Fila(s) o Elemento(s) encontrada(s)",
+                            "data" => $data
                         ];
                     } else {
                         HTTPStatus::setStatus(404);
                         $response = [
                             "status" => false,
-                            "msg" => HTTPStatus::getMessage(404)
+                            "msg" => "Fila(s) o Elemento(s) no encontrada(s)"
                         ];
                     }
                 } else {
-                    HTTPStatus::setStatus(400);
+                    HTTPStatus::setStatus(401);
                     $response = [
                         "status" => false,
-                        "msg" => "Parent ID is required for get_user permission"
+                        "msg" => "No autorizado"
                     ];
                 }
                 echo json_encode($response);
-            } else {
-                HTTPStatus::setStatus(403);
+            break;
+
+            default:
+                HTTPStatus::setStatus(404);
                 $response = [
                     "status" => false,
-                    "msg" => "Permission denied"
+                    "msg" => HTTPStatus::getMessage(404)
                 ];
                 echo json_encode($response);
-            }
+            break;
         }
         break;
 
@@ -109,14 +148,52 @@ switch ($method) {
                 $password = $body['password'];
                 $birthday = $body['birthday'];
                 $data = $instance->insertUser($name, $lastname, $email, $password, $birthday);
-                HTTPStatus::setStatus($data ? 201 : 404);
-                $response = [
-                    "status" => (bool)$data,
-                    "data" => $data,
-                    "msg" => HTTPStatus::getMessage(HTTPStatus::getMessage($data ? 201 : 404))
-                ];
+                if($data === false){
+                    HTTPStatus::setStatus(403);
+                    $response = [
+                        "status" => "false",
+                        "data" => $data,
+                        "msg" => HTTPStatus::getMessage(403)
+                    ];
+                }else{
+                    HTTPStatus::setStatus(201);
+                    $response = [
+                        "status" => "success",
+                        "data" => $data,
+                        "msg" => HTTPStatus::getMessage(201)
+                    ];
+                }
+                
                 echo json_encode($response);
-                break;
+            break;
+
+            case 'createuser':
+                $parent_id = $body['parent_id'];
+                $name = $body['name'];
+                $lastname = $body['lastname'];
+                $email = $body['email'];
+                $password = $body['password'];
+                $birthday = $body['birthday'];
+                $data = $instance->createUser($parent_id, $name, $lastname, $email, $password, $birthday);
+                /* var_dump($data);
+                die(); */
+                if($data === false){
+                    HTTPStatus::setStatus(403);
+                    $response = [
+                        "status" => "false",
+                        "data" => $data,
+                        "msg" => HTTPStatus::getMessage(403)
+                    ];
+                }else{
+                    HTTPStatus::setStatus(201);
+                    $response = [
+                        "status" => "success",
+                        "data" => $data,
+                        "msg" => HTTPStatus::getMessage(201)
+                    ];
+                }
+                echo json_encode($response);
+            break;
 
             default:
                 echo "Método no definido para esta clase";
@@ -125,11 +202,57 @@ switch ($method) {
         break;
 
     case 'PUT':
-        $controller->put($instance, $name_table, $body);
+        switch ($path){
+            case 'updateuser':
+                $id = $router->getParam();
+                if(in_array('update_user', $permissionsArray)){
+                    $data = $controller->update($instance, $name_table, $body);
+                    $response = [
+                        "status" => "success",
+                        "msg" => $data ? "Fila(s) o Elemento(s) actualizado(s)" : "Fila(s) o Elemento(s) no actualizado(s)",
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => "No autorizado"
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
+            default:
+                echo "Método no definido para esta clase";
+                break;
+        }
+       
         break;
 
     case 'DELETE':
-        $controller->delete($instance, $name_table);
+        switch($path){
+            case 'deleteuser':
+                if(in_array('delete_user', $permissionsArray)){
+                    $data = $controller->delete($instance, $name_table);
+                    $response = [
+                        "status" => "success",
+                        "msg" => $data ? "Fila(s) o Elemento(s) eliminado(s)" : "Fila(s) o Elemento(s) no eliminado(s)",
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => "No autorizado"
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
+            default:
+                echo "Método no definido para esta clase";
+                break;
+        }
         break;
 
     default:

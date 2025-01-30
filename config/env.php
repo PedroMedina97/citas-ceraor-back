@@ -11,10 +11,8 @@ class Env
     { // Carga el archivo .env
         $dotenv = Dotenv::createImmutable(__DIR__);
         $dotenv->load();
-        $simbols = '!@#$%^&*()-_=+';
-        $number = 1234685219;
         $word = $_ENV['API_JWT'];
-        $key = $word . $number . $simbols;
+        $key = $word;
         return $key;
     }
 }
