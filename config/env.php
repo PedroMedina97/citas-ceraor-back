@@ -2,16 +2,13 @@
 
 namespace Utils;
 
-use Dotenv\Dotenv;
 class Env
 {
 
 
     public static function generateKey()
     { // Carga el archivo .env
-        $dotenv = Dotenv::createImmutable(__DIR__);
-        $dotenv->load();
-        $word = $_ENV['API_JWT'];
+        $word = 'S~£y8oS7=x6BRA4Ga1Ht~QsD';
         $key = $word;
         return $key;
     }

@@ -1,17 +1,11 @@
 <?php
 
-use Dotenv\Dotenv;
-
-// Carga el archivo .env
-$dotenv = Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
 setlocale(LC_TIME, 'es_ES');
 
- $usuario = $_ENV['DB_USER'];
- $base = $_ENV['DB_NAME'];
- $contrasena = $_ENV['DB_PASSWORD'];
- $dbhost = $_ENV['DB_HOST'];
+ $usuario = 'ceraordc_adminsystem';
+ $base = 'ceraordc_ceraor';
+ $contrasena = 'X#*r&D@iEnI!';
+ $dbhost = '162.241.62.131';
  
 global $db;
 $db = new mysqli($dbhost, $usuario, $contrasena, $base) or die("Error al conectar con la base de datos");
