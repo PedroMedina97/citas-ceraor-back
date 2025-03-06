@@ -94,6 +94,56 @@ switch ($method) {
                 }
                 echo json_encode($response);
             break;
+            case 'updatepermissions':
+                if (in_array('update_rolpermission', $permissionsArray)) {
+                    $body = json_decode(file_get_contents("php://input"), true);
+            
+                    if (!isset($body['id_rol']) || !isset($body['permissions'])) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => "Datos incompletos"
+                        ];
+                        echo json_encode($response);
+                        exit();
+                    }
+            
+                    $id_rol = $body['id_rol'];
+                    $permissions = $body['permissions']; // Lista de permisos seleccionados [{id_permission: "1", id_rol: "2"}, ...]
+            
+                    try {
+                        // 1️⃣ Eliminar permisos actuales del rol
+                        $instance->deletePermissionsByRol($id_rol);
+            
+                        // 2️⃣ Insertar los nuevos permisos seleccionados
+                        foreach ($permissions as $perm) {
+                            $instance->addPermissionToRol($perm['id_permission'], $id_rol);
+                        }
+            
+                        HTTPStatus::setStatus(200);
+                        $response = [
+                            "status" => "success",
+                            "msg" => "Permisos actualizados correctamente",
+                            "data" => $permissions
+                        ];
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(500);
+                        $response = [
+                            "status" => false,
+                            "msg" => "Error en la base de datos",
+                            "error" => $e->getMessage()
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
+            
             default:
                 echo "Método no definido para esta clase";
                 break;

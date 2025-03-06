@@ -107,7 +107,7 @@ switch ($method) {
                 }
                 echo json_encode($response);
             break;
-
+            
             default:
                 HTTPStatus::setStatus(404);
                 $response = [
@@ -147,7 +147,9 @@ switch ($method) {
                 $email = $body['email'];
                 $password = $body['password'];
                 $birthday = $body['birthday'];
-                $data = $instance->insertUser($name, $lastname, $email, $password, $birthday);
+                $phone = $body ['phone'];
+                $related = $body ['related'];
+                $data = $instance->insertUser($name, $lastname, $email, $password, $birthday, $phone, $related);
                 if($data === false){
                     HTTPStatus::setStatus(403);
                     $response = [
@@ -166,35 +168,6 @@ switch ($method) {
                 
                 echo json_encode($response);
             break;
-
-            case 'createuser':
-                $parent_id = $body['parent_id'];
-                $name = $body['name'];
-                $lastname = $body['lastname'];
-                $email = $body['email'];
-                $password = $body['password'];
-                $birthday = $body['birthday'];
-                $data = $instance->createUser($parent_id, $name, $lastname, $email, $password, $birthday);
-                /* var_dump($data);
-                die(); */
-                if($data === false){
-                    HTTPStatus::setStatus(403);
-                    $response = [
-                        "status" => "false",
-                        "data" => $data,
-                        "msg" => HTTPStatus::getMessage(403)
-                    ];
-                }else{
-                    HTTPStatus::setStatus(201);
-                    $response = [
-                        "status" => "success",
-                        "data" => $data,
-                        "msg" => HTTPStatus::getMessage(201)
-                    ];
-                }
-                echo json_encode($response);
-            break;
-
             default:
                 echo "Método no definido para esta clase";
                 break;
