@@ -19,7 +19,7 @@ class User extends Entity
         $this->auth = new Auth();
     }
 
-    public function insertUser(String $name, String $lastname, String $email, String $pass, String $birthday, String $phone, String $related = '')
+    public function insertUser(String $name, String $lastname, String $email, String $pass, String $birthday, String $phone, String $address,String $related = '')
     {
         global $db;
         $name = mysqli_real_escape_string(Helpers::connect(), $name);
@@ -28,7 +28,9 @@ class User extends Entity
         $birthday = mysqli_real_escape_string(Helpers::connect(), $birthday);
         $pass = password_hash(($pass), PASSWORD_BCRYPT, ['cost' => 4]);
         $phone = mysqli_real_escape_string(Helpers::connect(), $phone);
+        $address = mysqli_real_escape_string(Helpers::connect(), $address);
         $related = mysqli_real_escape_string(Helpers::connect(), $related);
+        
         try {
             // Check if email already exists
             $exists_email = $db->query("SELECT * FROM users WHERE email = '$email'");
@@ -40,7 +42,7 @@ class User extends Entity
                 // Insert user data into database
                 $key = new Key();
                 $id = $key->generate_uuid();
-                $query = "INSERT INTO users (id, parent_id, name, lastname, email, password, birthday, phone, related, active, created_at, updated_at) VALUES ('$id', '-','$name', '$lastname', '$email', '$pass', '$birthday', '$phone', '$related', 1, NOW(), NOW())";
+                $query = "INSERT INTO users (id, parent_id, name, lastname, email, password, birthday, phone, address, related, active, created_at, updated_at) VALUES ('$id', '-','$name', '$lastname', '$email', '$pass', '$birthday', '$phone', '$address','$related', 1, NOW(), NOW())";
                 $sql = $db->query($query);
                 if (!$sql) {
                     throw new \Exception(mysqli_error($db));

@@ -148,8 +148,9 @@ switch ($method) {
                 $password = $body['password'];
                 $birthday = $body['birthday'];
                 $phone = $body ['phone'];
+                $address = $body ['address'];
                 $related = $body ['related'];
-                $data = $instance->insertUser($name, $lastname, $email, $password, $birthday, $phone, $related);
+                $data = $instance->insertUser($name, $lastname, $email, $password, $birthday, $phone, $address, $related);
                 if($data === false){
                     HTTPStatus::setStatus(403);
                     $response = [
