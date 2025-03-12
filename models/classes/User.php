@@ -19,17 +19,18 @@ class User extends Entity
         $this->auth = new Auth();
     }
 
-    public function insertUser(String $name, String $lastname, String $email, String $pass, String $birthday, String $phone, String $address,String $related = '')
+    public function insertUser(String $parentId, String $name, String $lastname, String $email, String $pass, String $birthday, String $phone, String $related = '', String $address, $idRol)
     {
         global $db;
+        $parentId = mysqli_real_escape_string(Helpers::connect(), $parentId);
         $name = mysqli_real_escape_string(Helpers::connect(), $name);
         $lastname = mysqli_real_escape_string(Helpers::connect(), $lastname);
         $email = mysqli_real_escape_string(Helpers::connect(), $email);
         $birthday = mysqli_real_escape_string(Helpers::connect(), $birthday);
         $pass = password_hash(($pass), PASSWORD_BCRYPT, ['cost' => 4]);
         $phone = mysqli_real_escape_string(Helpers::connect(), $phone);
-        $address = mysqli_real_escape_string(Helpers::connect(), $address);
         $related = mysqli_real_escape_string(Helpers::connect(), $related);
+        $address = mysqli_real_escape_string(Helpers::connect(), $address);
         
         try {
             // Check if email already exists
@@ -42,7 +43,7 @@ class User extends Entity
                 // Insert user data into database
                 $key = new Key();
                 $id = $key->generate_uuid();
-                $query = "INSERT INTO users (id, parent_id, name, lastname, email, password, birthday, phone, address, related, active, created_at, updated_at) VALUES ('$id', '-','$name', '$lastname', '$email', '$pass', '$birthday', '$phone', '$address','$related', 1, NOW(), NOW())";
+                $query = "INSERT INTO users (id, parent_id, name, lastname, email, password, birthday, phone, related, address, id_rol, active, created_at, updated_at) VALUES ('$id', '$parentId','$name', '$lastname', '$email', '$pass', '$birthday', '$phone', '$related', '$address', $idRol, 1, NOW(), NOW())";
                 $sql = $db->query($query);
                 if (!$sql) {
                     throw new \Exception(mysqli_error($db));
@@ -57,6 +58,12 @@ class User extends Entity
         }
     }
 
+    public function getUsersByRol($id_rol){
+        $query = "SELECT * FROM users WHERE id_rol= $id_rol; ";
+        $users = Helpers::connect()->query($query);
+        return isset($users) ? $users->fetch_all(MYSQLI_ASSOC) : null;
+    }
+
     public function login(string $email, string $password)
     {
         $email = mysqli_real_escape_string(Helpers::connect(), $email);
@@ -65,14 +72,29 @@ class User extends Entity
         if ($user && $user->num_rows === 1) {
             $instance = $user->fetch_assoc();
             $verify = password_verify($password, $instance['password']);
-           /*  var_dump($instance);
+            /*  var_dump($instance);
             die(); */
             if ($verify) {
                 $id = $instance['id'];
-                $sql = "SELECT u.id AS user_id, u.name AS user_name, u.lastname AS user_lastname, r.id AS role_id, r.name AS role_name,
-                                                          GROUP_CONCAT(p.name SEPARATOR ', ') AS permissions FROM users u INNER JOIN users_rols ur ON u.id = ur.id_user INNER JOIN
-                                                          rols r ON ur.id_rol = r.id INNER JOIN rols_permissions rp ON r.id = rp.id_rol INNER JOIN permissions p ON
-                                                          rp.id_permission = p.id WHERE u.id = "."'$id'". "AND ur.active = 1 AND r.active = 1 AND rp.active = 1 AND p.active = 1 GROUP BY u.id, r.id ORDER BY r.name;";
+                $sql = "SELECT 
+                        u.id AS user_id, 
+                        u.name AS user_name, 
+                        u.lastname AS user_lastname, 
+                        r.id AS role_id, 
+                        r.name AS role_name,
+                        GROUP_CONCAT(p.name SEPARATOR ', ') AS permissions 
+                    FROM users u
+                    INNER JOIN rols r ON u.id_rol = r.id
+                    INNER JOIN rols_permissions rp ON r.id = rp.id_rol
+                    INNER JOIN permissions p ON rp.id_permission = p.id
+                    WHERE u.id = '$id'
+                    AND u.active = 1 
+                    AND r.active = 1 
+                    AND rp.active = 1 
+                    AND p.active = 1
+                    GROUP BY u.id, r.id
+                    ORDER BY r.name;
+                    ";
                 /* echo $sql;
                 die(); */
                 $permissions = Helpers::connect()->query($sql);
@@ -86,7 +108,7 @@ class User extends Entity
                     "permissions" => $data
                 ];
                 // Generar el token usando el método getToken().
-               /*  var_dump($tokenData);
+                /*  var_dump($tokenData);
                 die(); */
                 $token = $this->auth->getToken($tokenData);
 

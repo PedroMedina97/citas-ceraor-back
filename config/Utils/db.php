@@ -10,7 +10,7 @@ setlocale(LC_TIME, 'es_ES');
 
  $usuario = $_ENV['DB_USER'];
  $base = $_ENV['DB_NAME'];
- $contrasena = "CeRaOR#12345678.";
+ $contrasena = $_ENV['DB_PASSWORD'];
  $dbhost = $_ENV['DB_HOST'];
  
 global $db;

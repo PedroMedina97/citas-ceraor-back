@@ -61,7 +61,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
 
             case 'getbyid':
                 if (in_array('get_user', $permissionsArray)) {
@@ -80,10 +80,27 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
+                break;
+            case 'getbyidrol':
+                if (in_array('get_user', $permissionsArray)) {
+                    $id = $router->getParam();
+                    $data = $instance->getUsersByRol($id);
+                    $response = [
+                        "status" => "success",
+                        "msg" => $data ? "Fila(s) o Elemento(s) encontrada(s)" : "Fila(s) o Elemento(s) no encontrada(s)",
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => "No autorizado"
+                    ];
+                }
+                echo json_encode($response);
             break;
-
             case 'getmyusers':
-                if(in_array('get_user', $permissionsArray)){
+                if (in_array('get_user', $permissionsArray)) {
                     $data = $instance->getByParentId('users', 'parent_id', $router->getParam());
                     if ($data) {
                         $response = [
@@ -106,8 +123,8 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
-            
+                break;
+
             default:
                 HTTPStatus::setStatus(404);
                 $response = [
@@ -115,7 +132,7 @@ switch ($method) {
                     "msg" => HTTPStatus::getMessage(404)
                 ];
                 echo json_encode($response);
-            break;
+                break;
         }
         break;
 
@@ -142,33 +159,42 @@ switch ($method) {
                 break;
 
             case 'register':
-                $name = $body['name'];
-                $lastname = $body['lastname'];
-                $email = $body['email'];
-                $password = $body['password'];
-                $birthday = $body['birthday'];
-                $phone = $body ['phone'];
-                $address = $body ['address'];
-                $related = $body ['related'];
-                $data = $instance->insertUser($name, $lastname, $email, $password, $birthday, $phone, $address, $related);
-                if($data === false){
-                    HTTPStatus::setStatus(403);
+                if (in_array('create_user', $permissionsArray)) {
+                    $parentId = $body['parentId'];
+                    $name = $body['name'];
+                    $lastname = $body['lastname'];
+                    $email = $body['email'];
+                    $password = $body['password'];
+                    $birthday = $body['birthday'];
+                    $phone = $body['phone'];
+                    $related = $body['related'];
+                    $address = $body['address'];
+                    $id_rol = $body['id_rol'];
+                    $data = $instance->insertUser($parentId, $name, $lastname, $email, $password, $birthday, $phone, $related, $address, $id_rol);
+                    if ($data === false) {
+                        HTTPStatus::setStatus(403);
+                        $response = [
+                            "status" => "false",
+                            "data" => $data,
+                            "msg" => HTTPStatus::getMessage(403)
+                        ];
+                    } else {
+                        HTTPStatus::setStatus(201);
+                        $response = [
+                            "status" => "success",
+                            "data" => $data,
+                            "msg" => HTTPStatus::getMessage(201)
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
                     $response = [
-                        "status" => "false",
-                        "data" => $data,
-                        "msg" => HTTPStatus::getMessage(403)
-                    ];
-                }else{
-                    HTTPStatus::setStatus(201);
-                    $response = [
-                        "status" => "success",
-                        "data" => $data,
-                        "msg" => HTTPStatus::getMessage(201)
+                        "status" => false,
+                        "msg" => "No autorizado"
                     ];
                 }
-                
                 echo json_encode($response);
-            break;
+                break;
             default:
                 echo "Método no definido para esta clase";
                 break;
@@ -176,10 +202,10 @@ switch ($method) {
         break;
 
     case 'PUT':
-        switch ($path){
+        switch ($path) {
             case 'updateuser':
                 $id = $router->getParam();
-                if(in_array('update_user', $permissionsArray)){
+                if (in_array('update_user', $permissionsArray)) {
                     $data = $controller->update($instance, $name_table, $body);
                     $response = [
                         "status" => "success",
@@ -194,19 +220,19 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
 
             default:
                 echo "Método no definido para esta clase";
                 break;
         }
-       
+
         break;
 
     case 'DELETE':
-        switch($path){
+        switch ($path) {
             case 'deleteuser':
-                if(in_array('delete_user', $permissionsArray)){
+                if (in_array('delete_user', $permissionsArray)) {
                     $data = $controller->delete($instance, $name_table);
                     $response = [
                         "status" => "success",
@@ -221,7 +247,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
 
             default:
                 echo "Método no definido para esta clase";

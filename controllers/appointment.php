@@ -117,13 +117,14 @@ switch ($method) {
     case 'POST':
         switch ($path) {
             case 'setappointment':
-                if (in_array('create_service', $permissionsArray)) {
+                if (in_array('create_appointment', $permissionsArray)) {
                     $client = $body['client'];
                     $personal = $body['personal'];
                     $id_subsidiary = $body['id_subsidiary'];
                     $service = $body['service'];
                     $appointment = $body['appointment'];
-                    $data = $instance->setAppointment($client, $personal, $id_subsidiary, $service, $appointment);
+                    $color = $body['color'];
+                    $data = $instance->setAppointment($client, $personal, $id_subsidiary, $service, $appointment, $color);
                     HTTPStatus::setStatus(201);
                     if ($data) {
                         $response = [
