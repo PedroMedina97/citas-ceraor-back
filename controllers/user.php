@@ -101,7 +101,8 @@ switch ($method) {
             break;
             case 'getmyusers':
                 if (in_array('get_user', $permissionsArray)) {
-                    $data = $instance->getByParentId('users', 'parent_id', $router->getParam());
+                    $id = $router->getParam();
+                    $data = $instance->getByParentId('users', 'parent_id', $id);
                     if ($data) {
                         $response = [
                             "status" => "success",
@@ -112,7 +113,7 @@ switch ($method) {
                         HTTPStatus::setStatus(404);
                         $response = [
                             "status" => false,
-                            "msg" => "Fila(s) o Elemento(s) no encontrada(s)"
+                            "msg" => "Usuarios no encontrados"
                         ];
                     }
                 } else {

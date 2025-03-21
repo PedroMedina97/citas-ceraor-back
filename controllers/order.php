@@ -117,7 +117,7 @@ switch ($method) {
             case 'create':
                 if(in_array('create_order', $permissionsArray)){
                     HTTPStatus::setStatus(201);
-                    $data = $controller->post($instance, $name_table, $body);
+                    $data = $instance->createOrder($name_table, $body);
                     $response = [
                         "status" => "success",
                         "msg" => HTTPStatus::getMessage(201),

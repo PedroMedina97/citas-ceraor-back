@@ -34,7 +34,7 @@ class Helpers
             /* var_dump($id);
             die(); */
             $query = "INSERT INTO $name_table VALUES ('$id', $data, 1, NOW(), NOW())";
-           /*   echo($query);
+            /*   echo($query);
             die(); */
             $sql = $db->query($query);
         }
@@ -116,7 +116,7 @@ class Helpers
         global $db;
         try {
             $query = "SELECT * FROM $name_table WHERE id_$column= '$id_related' and active= 1";
-           /*  echo($query);
+            /*  echo($query);
             die(); */
             $sql = $db->query($query);
             $sql = $sql->fetch_all(MYSQLI_ASSOC);
@@ -136,11 +136,11 @@ class Helpers
         try {
             $query = "SELECT * FROM $name_table WHERE $column = $id_related AND active = 1";
             $sql = $db->query($query);
-            
+
             if ($sql !== false) {
                 $result = $sql->fetch_all(MYSQLI_ASSOC);
                 if (!empty($result)) {
-                    return $result;  
+                    return $result;
                 } else {
                     return false;
                 }
@@ -152,7 +152,7 @@ class Helpers
             return null; // Regresa null en caso de error
         }
     }
-    
+
 
     /* public static function getByIdParent(string $name_table, string $column, string $id_related)
         {
@@ -213,6 +213,7 @@ class Helpers
             }
         }
     }
+
 
     public static function connect()
     {

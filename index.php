@@ -12,10 +12,10 @@ $controlador = $router->getController();
 $method = $router->getMethod();
 $param = $router->getParam();
 
-/*var_dump("controller: ".$controlador);
+/* var_dump("controller: ".$controlador);
 var_dump("method: ".$method);
 var_dump("param: ".$param);
-die();*/
+die(); */
 
 
 if (file_exists('controllers/' . $controlador . '.php')) {

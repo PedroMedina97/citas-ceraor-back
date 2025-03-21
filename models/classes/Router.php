@@ -1,7 +1,7 @@
 <?php 
 
 namespace Classes;
-
+use Classes\File;
 class Router{
     public $uri;
     public $controller;
@@ -15,6 +15,7 @@ class Router{
         $this->setController();
         $this->setParam();
         $this->setMethod();
+       /*  $this->dispatch(); */
     }
 
     public function setUri()
@@ -56,4 +57,16 @@ class Router{
     {
         return $this->param;
     }
+
+    /* public function dispatch()
+    {
+        if ($this->controller === 'file' && !empty($this->method)) {
+            $fileController = new File();
+            $fileController->getFile($this->method);
+            exit;
+        }
+
+        http_response_code(404);
+        echo json_encode(["error" => "Ruta no encontrada"]);
+    } */
 }
