@@ -74,6 +74,23 @@ class Order extends Entity
         $lateral_left_tomography_open_close = isset($body["lateral_left_tomography_open_close"]) ? $body["lateral_left_tomography_open_close"] : 0;
         $lateral_right_tomography_open_close = isset($body["lateral_right_tomography_open_close"]) ? $body["lateral_right_tomography_open_close"] : 0;
 
+        $ondemand = isset($body["ondemand"]) ? $body["ondemand"] : 0;
+        $dicom = isset($body["dicom"]) ? $body["dicom"] : 0;
+        $tomography_piece = isset($body["tomography_piece"]) ? $body["tomography_piece"] : NULL;
+        $implant = isset($body["implant"]) ? $body["implant"] : NULL;
+        $impacted_tooth = isset($body["impacted_tooth"]) ? $body["impacted_tooth"] : NULL;
+        $others_tomography = isset($body["others_tomography"]) ? $body["others_tomography"] : NULL;
+        $stl = isset($body["stl"]) ? $body["stl"] : 0;
+        $obj = isset($body["obj"]) ? $body["obj"] : 0;
+        $ply = isset($body["ply"]) ? $body["ply"] : 0;
+        $invisaligh = isset($body["invisaligh"]) ? $body["invisaligh"] : 0;
+        $others_scanners = isset($body["others_scanners"]) ? $body["others_scanners"] : NULL;
+        $maxilar_superior = isset($body["maxilar_superior"]) ? $body["maxilar_superior"] : 0;
+        $maxilar_inferior = isset($body["maxilar_inferior"]) ? $body["maxilar_inferior"] : 0;
+        $maxilar_both = isset($body["maxilar_both"]) ? $body["maxilar_both"] : 0;
+        $maxilar_others = isset($body["maxilar_others"]) ? $body["maxilar_others"] : NULL;
+        $dental_interpretation = isset($body["dental_interpretation"]) ? $body["dental_interpretation"] : 0;
+
         $query = "INSERT INTO $name_table (
                     id, patient, birthdate, phone, doctor, address, professional_id, email, 
                     acetate_print, paper_print, send_email, rx_panoramic, rx_arc_panoramic, 
@@ -85,7 +102,9 @@ class Order extends Entity
                     risina, dentalprint, 3d_risina, surgical_guide, studio_piece, 
                     complete_tomography, two_jaws_tomography, maxilar_tomography, jaw_tomography, 
                     snp_tomography, ear_tomography, atm_tomography_open_close, 
-                    lateral_left_tomography_open_close, lateral_right_tomography_open_close, 
+                    lateral_left_tomography_open_close, lateral_right_tomography_open_close, ondemand,
+                    dicom, tomography_piece, implant, impacted_tooth, others_tomography, stl, obj, ply, 
+                    invisaligh, others_scanners, maxilar_superior, maxilar_inferior, maxilar_both, maxilar_others, dental_interpretation,
                     active, created_at, updated_at
                 ) VALUES (
                     '$id', '$patient', '$birthdate', '$phone', '$doctor', '$address', 
@@ -96,11 +115,13 @@ class Order extends Entity
                     $complete_periapical, $individual_periapical, $conductometry, 
                     $clinical_photography, $rickets, $mcnamara, $downs, $jaraback, $steiner, 
                     '$others_analysis', $analysis_bolton, $analysis_moyers, '$others_models_analysis', 
-                    $risina, $dentalprint, $three_d_risina, $surgical_guide, $studio_piece, 
+                    $risina, $dentalprint, $three_d_risina, $surgical_guide, '$studio_piece', 
                     $complete_tomography, $two_jaws_tomography, $maxilar_tomography, $jaw_tomography, 
                     $snp_tomography, $ear_tomography, $atm_tomography_open_close, 
-                    $lateral_left_tomography_open_close, $lateral_right_tomography_open_close, 
-                    1, NOW(), NOW()
+                    $lateral_left_tomography_open_close, $lateral_right_tomography_open_close, $ondemand,
+                    $dicom, '$tomography_piece', '$implant', '$impacted_tooth', '$others_tomography', $stl, $obj, 
+                    $ply, $invisaligh, '$others_scanners', $maxilar_superior, $maxilar_inferior, $maxilar_both, 
+                    '$maxilar_others', $dental_interpretation, 1, NOW(), NOW()
         );";
         /* echo $query;
         die(); */
