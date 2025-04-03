@@ -134,7 +134,9 @@ class Helpers
     {
         global $db;
         try {
-            $query = "SELECT * FROM $name_table WHERE $column = $id_related AND active = 1";
+            $query = "SELECT * FROM $name_table WHERE $column = '$id_related' AND active = 1";
+           /*  echo $query;
+            die(); */
             $sql = $db->query($query);
 
             if ($sql !== false) {
@@ -219,5 +221,10 @@ class Helpers
     {
         global $db;
         return $db;
+    }
+
+    public static function myQuery($query){
+        $sql = Helpers::connect()->query($query);
+        return $sql->fetch_all(MYSQLI_ASSOC);
     }
 }

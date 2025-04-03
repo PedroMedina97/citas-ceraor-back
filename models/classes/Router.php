@@ -1,13 +1,16 @@
-<?php 
+<?php
 
 namespace Classes;
+
 use Classes\File;
-class Router{
+
+class Router
+{
     public $uri;
     public $controller;
     public $param;
     public $method;
-    
+    public $extra;
 
     public function __construct()
     {
@@ -15,7 +18,8 @@ class Router{
         $this->setController();
         $this->setParam();
         $this->setMethod();
-       /*  $this->dispatch(); */
+        $this->setExtra();
+        /*  $this->dispatch(); */
     }
 
     public function setUri()
@@ -25,7 +29,7 @@ class Router{
 
     public function setController()
     {
-        $this->controller = $this->uri[1]=== '' ? 'not_found': $this->uri[1];
+        $this->controller = $this->uri[1] === '' ? 'not_found' : $this->uri[1];
     }
 
     public function setMethod()
@@ -37,6 +41,10 @@ class Router{
     {
         $this->param = !empty($this->uri[3]) ? $this->uri[3] : '';
     }
+    public function setExtra()
+    {
+        $this->extra = !empty($this->uri[4]) ? $this->uri[4] : '';
+    } 
 
     public function getUri()
     {
@@ -56,6 +64,11 @@ class Router{
     public function getParam()
     {
         return $this->param;
+    }
+
+    public function getExtra()
+    {
+        return $this->extra;
     }
 
     /* public function dispatch()

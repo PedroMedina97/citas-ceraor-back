@@ -82,7 +82,7 @@ switch ($method) {
                 }
                 echo json_encode($response);
             break;
-
+            
             case 'getbyid':
                 if (in_array('get_appointment', $permissionsArray)) {
                     $id = $router->getParam();
@@ -101,7 +101,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-                break;
+            break;
 
             default:
                 HTTPStatus::setStatus(404);
@@ -118,13 +118,16 @@ switch ($method) {
         switch ($path) {
             case 'setappointment':
                 if (in_array('create_appointment', $permissionsArray)) {
+                    /* var_dump($body);
+                    die(); */
+                    $id_order = $body['id_order'];
                     $client = $body['client'];
                     $personal = $body['personal'];
                     $id_subsidiary = $body['id_subsidiary'];
                     $service = $body['service'];
                     $appointment = $body['appointment'];
                     $color = $body['color'];
-                    $data = $instance->setAppointment($client, $personal, $id_subsidiary, $service, $appointment, $color);
+                    $data = $instance->setAppointment($id_order, $client, $personal, $id_subsidiary, $service, $appointment, $color);
                     HTTPStatus::setStatus(201);
                     if ($data) {
                         $response = [

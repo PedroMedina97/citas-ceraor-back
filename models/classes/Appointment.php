@@ -6,23 +6,24 @@ use Picqer\Barcode\BarcodeGeneratorPNG;
 use Utils\Env;
 use Utils\Helpers;
 use Utils\Key;
+use Classes\Order;
 
 class Appointment extends Entity{
 
-    public function setAppointment(String $client, String $personal, String $id_subsidiary, String $service, String $appointment, String $color){
+    public function setAppointment(String $id_order = "", String $client, String $personal, String $id_subsidiary, String $service, String $appointment, String $color){
         $env = new Env();
         $conn = Helpers::connect();
-        
+        $order = new Order();
         $client = mysqli_real_escape_string($conn, $client);
         $personal = mysqli_real_escape_string($conn, $personal);
         $id_subsidiary = mysqli_real_escape_string($conn, $id_subsidiary);
         $service = mysqli_real_escape_string($conn, $service);
         $appointment = mysqli_real_escape_string($conn, $appointment);
         $color = mysqli_real_escape_string($conn, $color); // Asegurar que el color se almacene correctamente
-    
+        $id_order = mysqli_real_escape_string($conn, $id_order);
         $key = new Key();
         $id = $key->generate_uuid();
-        $dataBarcode = $this->generateShortUuid($id);
+        $data = $this->generateShortUuid($id);
     
         $directory = 'appointments-barcodes';
         if (!is_dir($directory)) {
@@ -30,14 +31,19 @@ class Appointment extends Entity{
         }
     
         $generator = new BarcodeGeneratorPNG();
-        $barcode = $generator->getBarcode($dataBarcode, $generator::TYPE_CODE_128);
-        $filePath = $directory . '/' . $dataBarcode . '.png';
+        $barcode = $generator->getBarcode($data, $generator::TYPE_CODE_128);
+        $dataBarcode = $data . '.png';
+        $filePath = $directory . '/' . $dataBarcode;
         file_put_contents($filePath, $barcode);
-        $url = $env->server.'/'.$filePath;
-    
-        $query = "INSERT INTO appointments (id, client, personal, id_subsidiary, service, appointment, barcode, code, color, active, created_at, updated_at) 
-                  VALUES ('$id', '$client', '$personal', '$id_subsidiary', '$service', '$appointment', '$url', '$dataBarcode', '$color', 1, NOW(), NOW())";
-    
+        if($id_order == ""){
+            $query = "INSERT INTO appointments (id, id_order, client, personal, id_subsidiary, service, appointment, barcode, code, color, active, created_at, updated_at) 
+                  VALUES ('$id', null, '$client', '$personal', '$id_subsidiary', '$service', '$appointment', '$dataBarcode', '$data', '$color', 1, NOW(), NOW())";
+        }else{
+            $query = "INSERT INTO appointments (id, id_order, client, personal, id_subsidiary, service, appointment, barcode, code, color, active, created_at, updated_at) 
+                  VALUES ('$id', '$id_order', '$client', '$personal', '$id_subsidiary', '$service', '$appointment', '$dataBarcode', '$data', '$color', 1, NOW(), NOW())";
+            $order->generateDocument($id_order);
+        }
+        
         $result = Helpers::connect()->query($query);
         return $result;
     }

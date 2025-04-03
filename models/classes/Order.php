@@ -6,6 +6,7 @@ use Abstracts\Entity;
 use Utils\Helpers;
 use Utils\Key;
 use Classes\File;
+
 class Order extends Entity
 {
 
@@ -15,12 +16,22 @@ class Order extends Entity
         return Helpers::getByIdRelated($name_table, "appointment", $id);
     }
 
+    public function getOrdersByDoctor(String $name)
+    {
+        $sql = "SELECT o.*
+            FROM orders o
+            LEFT JOIN appointments a ON a.id_order = o.id
+            WHERE LOWER(o.doctor) = LOWER(REPLACE('$name', '%20', ' '))
+            AND a.id_order IS NULL;";
+        return Helpers::myQuery($sql);
+    }
+
     public function createOrder(String $name_table, array $body)
     {
         $key = new Key();
-        $file = new File();
+        /*  $file = new File();
         $file->generatePDF($body);
-        die();
+        die(); */
         $id = $key->generate_uuid();
         $patient = $body["patient"];
         $birthdate = $body["birthdate"];
@@ -118,15 +129,15 @@ class Order extends Entity
                     $risina, $dentalprint, $three_d_risina, $surgical_guide, '$studio_piece', 
                     $complete_tomography, $two_jaws_tomography, $maxilar_tomography, $jaw_tomography, 
                     $snp_tomography, $ear_tomography, $atm_tomography_open_close, 
-                    $lateral_left_tomography_open_close, $lateral_right_tomography_open_close, $ondemand,
-                    $dicom, '$tomography_piece', '$implant', '$impacted_tooth', '$others_tomography', $stl, $obj, 
+                    $lateral_left_tomography_open_close, $lateral_right_tomography_open_close, '$ondemand',
+                    '$dicom', '$tomography_piece', '$implant', '$impacted_tooth', '$others_tomography', $stl, $obj, 
                     $ply, $invisaligh, '$others_scanners', $maxilar_superior, $maxilar_inferior, $maxilar_both, 
                     '$maxilar_others', $dental_interpretation, 1, NOW(), NOW()
         );";
         /* echo $query;
         die(); */
         $sql = Helpers::connect()->query($query);
-
+       /*  $this->generateDocument($id); */
         if (!$sql) {
             throw new \Exception(mysqli_error(Helpers::connect()));
         }
@@ -134,5 +145,112 @@ class Order extends Entity
 
     }
 
+    public function getAllActiveOrders()
+    {
+        $sql = "SELECT o.*, 
+                a.code AS appointment_code
+                FROM orders o
+                LEFT JOIN appointments a ON a.id_order = o.id
+                WHERE o.active = 1;";
+        return Helpers::myQuery($sql);    
+    }
 
+    public function generateDocument($id)
+    {
+        $data = Helpers::myQuery("SELECT 
+        a.id AS appointment_id,
+        a.id_order,
+        a.client,
+        a.personal,
+        a.id_subsidiary,
+        a.service,
+        a.appointment,
+        a.barcode,
+        a.code,
+        a.color,
+        a.active AS appointment_active,
+        a.created_at AS appointment_created_at,
+        a.updated_at AS appointment_updated_at,
+
+        o.id AS order_id,
+        o.patient,
+        o.birthdate,
+        o.phone,
+        o.doctor,
+        o.address,
+        o.professional_id,
+        o.email,
+        o.acetate_print,
+        o.paper_print,
+        o.send_email,
+        o.rx_panoramic,
+        o.rx_arc_panoramic,
+        o.rx_lateral_skull,
+        o.ap_skull,
+        o.pa_skull,
+        o.paranasal_sinuses,
+        o.atm_open_close,
+        o.profilogram,
+        o.watters_skull,
+        o.palmar_digit,
+        o.others_radiography,
+        o.occlusal_xray,
+        o.superior,
+        o.inferior,
+        o.complete_periapical,
+        o.individual_periapical,
+        o.conductometry,
+        o.clinical_photography,
+        o.rickets,
+        o.mcnamara,
+        o.downs,
+        o.jaraback,
+        o.steiner,
+        o.others_analysis,
+        o.analysis_bolton,
+        o.analysis_moyers,
+        o.others_models_analysis,
+        o.risina,
+        o.dentalprint,
+        o.`3d_risina`,
+        o.surgical_guide,
+        o.studio_piece,
+        o.complete_tomography,
+        o.two_jaws_tomography,
+        o.maxilar_tomography,
+        o.jaw_tomography,
+        o.snp_tomography,
+        o.ear_tomography,
+        o.atm_tomography_open_close,
+        o.lateral_left_tomography_open_close,
+        o.lateral_right_tomography_open_close,
+        o.ondemand,
+        o.dicom,
+        o.tomography_piece,
+        o.implant,
+        o.impacted_tooth,
+        o.others_tomography,
+        o.stl,
+        o.obj,
+        o.ply,
+        o.invisaligh,
+        o.others_scanners,
+        o.maxilar_superior,
+        o.maxilar_inferior,
+        o.maxilar_both,
+        o.maxilar_others,
+        o.dental_interpretation,
+        o.active AS order_active,
+        o.created_at AS order_created_at,
+        o.updated_at AS order_updated_at
+
+    FROM appointments a
+    JOIN orders o ON a.id_order = o.id
+    WHERE a.id_order = '$id'
+    ORDER BY a.created_at DESC
+    LIMIT 1;
+    ");
+        $file = new File();
+        return $file->generatePDF($data);
+    }
 }

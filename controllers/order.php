@@ -1,4 +1,5 @@
 <?php
+
 use Classes\Controller;
 use Classes\Auth;
 use Classes\HTTPStatus;
@@ -27,7 +28,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $path = isset($router) ? $router->getMethod() : null;
 
 // Verificar si la ruta es diferente de "login"
-if ($path !== 'login') {
+if ($path !== 'login' && $path !== 'generatedocument') {
     // Si el token no existe o no es válido, regresar "401 No autorizado"
     if (is_null($token) || is_null($decoded)) {
         HTTPStatus::setStatus(401);
@@ -39,13 +40,25 @@ if ($path !== 'login') {
         exit();
     }
 }
+/* if ($path !== 'login' || $path !=='generatedocument') {
+    // Si el token no existe o no es válido, regresar "401 No autorizado"
+    if (is_null($token) || is_null($decoded)) {
+        HTTPStatus::setStatus(401);
+        $response = [
+            "status" => false,
+            "msg" => "No autorizado"
+        ];
+        echo json_encode($response);
+        exit();
+    }
+} */
 
 switch ($method) {
     case 'GET':
         switch ($path) {
             case 'getall':
                 if (in_array('getall_order', $permissionsArray)) {
-                    $data = $instance->getAll($name_table);
+                    $data = $instance->getAllActiveOrders($name_table);
                     HTTPStatus::setStatus(200);
                     $response = [
                         "status" => "success",
@@ -60,7 +73,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
 
             case 'getbyid':
                 if (in_array('get_order', $permissionsArray)) {
@@ -80,7 +93,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
 
             case 'getbyappointment':
                 if (in_array('get_order', $permissionsArray)) {
@@ -100,7 +113,48 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
+
+            case 'generatedocument':
+                if ($router->getParam()) {
+                    $id = $router->getParam();
+                    $data = $instance->generateDocument($name_table, $id);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(404);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(204)
+                    ];
+                }
+                echo json_encode($response);
+                break;
+                
+            case 'getbydoctor':
+                if (in_array('get_order', $permissionsArray)) {
+                    $name = $router->getParam();
+                    $data = $instance->getOrdersByDoctor($name);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+
+                break;
             default:
                 HTTPStatus::setStatus(404);
                 $response = [
@@ -108,14 +162,14 @@ switch ($method) {
                     "msg" => HTTPStatus::getMessage(404)
                 ];
                 echo json_encode($response);
-            break;     
+                break;
         }
         break;
 
     case 'POST':
         switch ($path) {
             case 'create':
-                if(in_array('create_order', $permissionsArray)){
+                if (in_array('create_order', $permissionsArray)) {
                     HTTPStatus::setStatus(201);
                     $data = $instance->createOrder($name_table, $body);
                     $response = [
@@ -123,8 +177,7 @@ switch ($method) {
                         "msg" => HTTPStatus::getMessage(201),
                         "data" => $data
                     ];
-                }
-                else{
+                } else {
                     HTTPStatus::setStatus(401);
                     $response = [
                         "status" => false,
@@ -132,7 +185,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
             default:
                 echo "Método no definido para esta clase";
                 break;
@@ -140,9 +193,9 @@ switch ($method) {
         break;
 
     case 'PUT':
-        switch ($path){
+        switch ($path) {
             case 'update':
-                if(in_array('update_order', $permissionsArray)){
+                if (in_array('update_order', $permissionsArray)) {
                     HTTPStatus::setStatus(200);
                     $data = $controller->update($instance, $name_table, $body);
                     $response = [
@@ -150,8 +203,7 @@ switch ($method) {
                         "msg" => HTTPStatus::getMessage(200),
                         "data" => $data
                     ];
-                }
-                else{
+                } else {
                     HTTPStatus::setStatus(401);
                     $response = [
                         "status" => false,
@@ -159,19 +211,19 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
 
             default:
                 echo "Método no definido para esta clase";
-            break;
+                break;
         }
-       
+
         break;
 
     case 'DELETE':
-        switch($path){
+        switch ($path) {
             case 'delete':
-                if(in_array('delete_order', $permissionsArray)){
+                if (in_array('delete_order', $permissionsArray)) {
                     $data = $controller->delete($instance, $name_table);
                     HTTPStatus::setStatus(200);
                     $response = [
@@ -187,7 +239,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
 
             default:
                 echo "Método no definido para esta clase";

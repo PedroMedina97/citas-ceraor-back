@@ -3,60 +3,70 @@
 use Classes\Controller;
 use Classes\Auth;
 use Classes\HTTPStatus;
-use Classes\File;
 
 $controller = new Controller();
 $auth = new Auth();
 $response = null;
-$method = $_SERVER['REQUEST_METHOD'];
-$path = isset($router) ? $router->getMethod() : null;
-/* echo "entra";
-die(); */
-switch ($method) {
-    case 'GET':
-        switch ($path) {
-            case 'getfile':
-                $directory = "C:/wamp64/www/citas-ceraor-back/docs/";
-                $filePath = $directory . "orden.pdf"; 
+$function = $_SERVER['REQUEST_METHOD'];
+$method = $router->getMethod();    // "getfile"
+$action = $router->getParam();     // "download", "read", "list"
+$code = $router->getExtra();       // nombre del archivo PDF
 
+switch ($function) {
+    case 'GET':
+        switch ($method) {
+            case 'getfile':
+                $directory = 'docs/';
+
+                // Validar existencia del directorio
                 if (!is_dir($directory)) {
                     echo json_encode(["error" => "La carpeta no existe"]);
                     exit;
                 }
 
-                if ($param === 'list') {
+                // Acción: listar archivos
+                if ($action === 'list') {
                     $files = scandir($directory);
                     $files = array_diff($files, ['.', '..']);
                     echo json_encode(["files" => array_values($files)]);
                     exit;
                 }
 
-                if ($param === 'read') {
+                // Sanitizar el código recibido como nombre del archivo
+                $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '', $code);
+
+                // Si no se especificó código
+                if (empty($filename)) {
+                    echo json_encode(["error" => "No se especificó un archivo"]);
+                    exit;
+                }
+
+                $filePath = $directory . $filename;
+
+                // Acción: leer contenido del archivo
+                if ($action === 'read') {
                     if (file_exists($filePath)) {
                         echo json_encode(["content" => file_get_contents($filePath)]);
                     } else {
-                        echo json_encode(["error" => "El archivo test.txt no existe"]);
+                        echo json_encode(["error" => "El archivo no existe"]);
                     }
                     exit;
                 }
 
-                // Descargar el archivo
-                if ($param === 'download') {
+                // Acción: descargar el archivo
+                if ($action === 'download') {
                     if (file_exists($filePath)) {
-                        // Configurar los encabezados para la descarga
                         header('Content-Description: File Transfer');
-                        header('Content-Type: application/octet-stream');
-                        header('Content-Disposition: attachment; filename="' . basename($filePath) . '"');
+                        header('Content-Type: application/pdf');
+                        header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
                         header('Expires: 0');
                         header('Cache-Control: must-revalidate');
                         header('Pragma: public');
                         header('Content-Length: ' . filesize($filePath));
-
-                        // Leer y enviar el archivo al cliente
                         readfile($filePath);
                         exit;
                     } else {
-                        echo json_encode(["error" => "El archivo test.txt no existe"]);
+                        echo json_encode(["error" => "El archivo no existe"]);
                     }
                     exit;
                 }
