@@ -41,7 +41,7 @@ class Appointment extends Entity{
         }else{
             $query = "INSERT INTO appointments (id, id_order, client, personal, id_subsidiary, service, appointment, barcode, code, color, active, created_at, updated_at) 
                   VALUES ('$id', '$id_order', '$client', '$personal', '$id_subsidiary', '$service', '$appointment', '$dataBarcode', '$data', '$color', 1, NOW(), NOW())";
-            $order->generateDocument($id_order);
+            /* $order->generateDocument($id_order); */
         }
         
         $result = Helpers::connect()->query($query);

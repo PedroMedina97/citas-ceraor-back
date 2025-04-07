@@ -32,6 +32,7 @@ class File
     public static function generatePDF(array $dataPDF)
     {
         // Configurar Dompdf
+
         $info = $dataPDF[0];
         /* var_dump($info);
         die(); */
@@ -64,11 +65,30 @@ class File
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        /* var_dump($info);
+        die(); */
+        if(array_key_exists('barcode', $info)){
+            $pathBarcode = "appointments-barcodes/".$info['barcode'];
+            $typeBarcode = pathinfo($pathBarcode, PATHINFO_EXTENSION);
+            $dataBarcode = file_get_contents($pathBarcode);
+            $base64Barcode = 'data:image/' . $typeBarcode . ';base64,' . base64_encode($dataBarcode);
+        }else{
+            $pathBarcode = $info['barcode'] = "assets/images/sin-folio.png";
+            
+            $typeBarcode = pathinfo($pathBarcode, PATHINFO_EXTENSION);
+            $dataBarcode = file_get_contents($pathBarcode);
+            $base64Barcode = 'data:image/' . $typeBarcode . ';base64,' . base64_encode($dataBarcode);
+        }
 
-        $pathBarcode = "appointments-barcodes/".$info['barcode'];
-        $typeBarcode = pathinfo($pathBarcode, PATHINFO_EXTENSION);
-        $dataBarcode = file_get_contents($pathBarcode);
-        $base64Barcode = 'data:image/' . $typeBarcode . ';base64,' . base64_encode($dataBarcode);
+        if(!array_key_exists('code', $info)){
+            $info['code'] = "sin-folio";
+        }
+        if(!array_key_exists('order_created_at', $info)){
+            $info['order_created_at'] =  date("Y-m-d");
+            echo $info['order_created_at'];
+           /*  die(); */
+        }
+        
         /* echo getcwd();
         die(); */
         // Estructura HTML con secciones bien organizadas
@@ -106,7 +126,7 @@ class File
         </center>
             <table style='width: 100% !important; table-layout: fixed !important; border-spacing: 10px !important;'>
                 <thead>
-                    <th><div class='section-title'>Datos de la consulta: ".$info['code']."</div></th>
+                    <th><div class='section-title'>Folio: ".$info['code']."</div></th>
                 </thead>
                 <tr>
                     <td style='width: 100% !important; background-color: #f2f2f2 !important; padding: 10px !important; border-radius: 1px !important; vertical-align: top !important;'>
@@ -316,8 +336,12 @@ class File
         // Renderizar el PDF
         $dompdf->render();
         $pdfOutput = $dompdf->output();
-
-        $cleanCode = preg_replace('/[^A-Za-z0-9_\-]/', '_', $info['code']);
+        $cleanCode = "";
+        if($info['code'] == 'sin-folio'){
+            $cleanCode = $info['id'];
+        }else{
+            $cleanCode = preg_replace('/[^A-Za-z0-9_\-]/', '_', $info['code']);
+        }
 
         // Ruta con nombre dinámico
         $filePath = 'docs/' . $cleanCode . '.pdf';

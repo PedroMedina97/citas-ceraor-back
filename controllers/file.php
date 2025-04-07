@@ -3,6 +3,7 @@
 use Classes\Controller;
 use Classes\Auth;
 use Classes\HTTPStatus;
+use Classes\Order;
 
 $controller = new Controller();
 $auth = new Auth();
@@ -11,6 +12,7 @@ $function = $_SERVER['REQUEST_METHOD'];
 $method = $router->getMethod();    // "getfile"
 $action = $router->getParam();     // "download", "read", "list"
 $code = $router->getExtra();       // nombre del archivo PDF
+$order = new Order();
 
 switch ($function) {
     case 'GET':
@@ -55,6 +57,29 @@ switch ($function) {
 
                 // Acción: descargar el archivo
                 if ($action === 'download') {
+                    $folio = preg_replace('/^docs\/|\.pdf$/', '', $filePath);
+                    $order->generateDocument($folio);
+
+                    if (file_exists($filePath)) {
+                        header('Content-Description: File Transfer');
+                        header('Content-Type: application/pdf');
+                        header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
+                        header('Expires: 0');
+                        header('Cache-Control: must-revalidate');
+                        header('Pragma: public');
+                        header('Content-Length: ' . filesize($filePath));
+                        readfile($filePath);
+                        exit;
+                    } else {
+                        echo json_encode(["error" => "El archivo no existe"]);
+                    }
+                    exit;
+                }
+
+                if ($action === 'downloadbyid') {
+                    $id = preg_replace('/^docs\/|\.pdf$/', '', $filePath);
+                    $order->generateDocumentById($id);
+
                     if (file_exists($filePath)) {
                         header('Content-Description: File Transfer');
                         header('Content-Type: application/pdf');

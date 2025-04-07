@@ -72,7 +72,7 @@ class Order extends Entity
         $others_models_analysis = isset($body["others_models_analysis"]) ? $body["others_models_analysis"] : NULL;
         $risina = isset($body["risina"]) ? $body["risina"] : 0;
         $dentalprint = isset($body["dentalprint"]) ? $body["dentalprint"] : 0;
-        $three_d_risina = isset($body["3d_risina"]) ? $body["3d_risina"] : 0;
+        $three_d_risina = isset($body["risina_3d"]) ? $body["risina_3d"] : 0;
         $surgical_guide = isset($body["surgical_guide"]) ? $body["surgical_guide"] : 0;
         $studio_piece = isset($body["studio_piece"]) ? $body["studio_piece"] : 0;
         $complete_tomography = isset($body["complete_tomography"]) ? $body["complete_tomography"] : 0;
@@ -134,7 +134,7 @@ class Order extends Entity
                     $ply, $invisaligh, '$others_scanners', $maxilar_superior, $maxilar_inferior, $maxilar_both, 
                     '$maxilar_others', $dental_interpretation, 1, NOW(), NOW()
         );";
-        /* echo $query;
+       /*  echo $query;
         die(); */
         $sql = Helpers::connect()->query($query);
        /*  $this->generateDocument($id); */
@@ -155,7 +155,7 @@ class Order extends Entity
         return Helpers::myQuery($sql);    
     }
 
-    public function generateDocument($id)
+    public function generateDocument(String $code)
     {
         $data = Helpers::myQuery("SELECT 
         a.id AS appointment_id,
@@ -244,12 +244,20 @@ class Order extends Entity
         o.created_at AS order_created_at,
         o.updated_at AS order_updated_at
 
-    FROM appointments a
-    JOIN orders o ON a.id_order = o.id
-    WHERE a.id_order = '$id'
-    ORDER BY a.created_at DESC
-    LIMIT 1;
-    ");
+            FROM appointments a
+            JOIN orders o ON a.id_order = o.id
+            WHERE a.code = '$code'
+            ORDER BY a.created_at DESC
+            LIMIT 1;
+            ");
+        $file = new File();
+        return $file->generatePDF($data);
+    }
+
+    public function generateDocumentById(String $id)
+    {
+        $query = "SELECT *  FROM orders WHERE id='$id' AND active =1 LIMIT 1;";
+        $data = Helpers::myQuery($query);
         $file = new File();
         return $file->generatePDF($data);
     }
