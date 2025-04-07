@@ -98,7 +98,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
             case 'getmyusers':
                 if (in_array('get_user', $permissionsArray)) {
                     $id = $router->getParam();
@@ -172,19 +172,20 @@ switch ($method) {
                     $address = $body['address'];
                     $id_rol = $body['id_rol'];
                     $data = $instance->insertUser($parentId, $name, $lastname, $email, $password, $birthday, $phone, $related, $address, $id_rol);
-                    if ($data === false) {
-                        HTTPStatus::setStatus(403);
-                        $response = [
-                            "status" => "false",
-                            "data" => $data,
-                            "msg" => HTTPStatus::getMessage(403)
-                        ];
-                    } else {
+
+                    if ($data) {
                         HTTPStatus::setStatus(201);
                         $response = [
                             "status" => "success",
                             "data" => $data,
                             "msg" => HTTPStatus::getMessage(201)
+                        ];
+                    } else {
+                        HTTPStatus::setStatus(403);
+                        $response = [
+                            "status" => "false",
+                            "data" => $data,
+                            "msg" => HTTPStatus::getMessage(403)
                         ];
                     }
                 } else {
