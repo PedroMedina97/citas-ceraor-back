@@ -29,22 +29,24 @@ class Router
 
     public function setController()
     {
-        $this->controller = $this->uri[1] === '' ? 'not_found' : $this->uri[1];
+        $this->controller = $this->uri[1] ?? 'not_found';
     }
-
+    
     public function setMethod()
     {
-        $this->method = !empty($this->uri[2]) ? $this->uri[2] : '';
+        $this->method = $this->uri[2] ?? '';
     }
-
+    
     public function setParam()
     {
-        $this->param = !empty($this->uri[3]) ? $this->uri[3] : '';
+        $this->param = $this->uri[3] ?? '';
     }
+    
     public function setExtra()
     {
-        $this->extra = !empty($this->uri[4]) ? $this->uri[4] : '';
-    } 
+        $this->extra = $this->uri[4] ?? '';
+    }
+     
 
     public function getUri()
     {
