@@ -18,13 +18,18 @@ class Order extends Entity
 
     public function getOrdersByDoctor(String $name)
     {
+        $decodedName = strtolower(trim(urldecode($name)));
+    
         $sql = "SELECT o.*
             FROM orders o
             LEFT JOIN appointments a ON a.id_order = o.id
-            WHERE LOWER(o.doctor) = LOWER(REPLACE('$name', '%20', ' '))
-            AND a.id_order IS NULL;";
+            WHERE LOWER(o.doctor) = '$decodedName'
+            AND a.id_order IS NULL;
+        ";
+    
         return Helpers::myQuery($sql);
     }
+    
 
     public function createOrder(String $name_table, array $body)
     {
