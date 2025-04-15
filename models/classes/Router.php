@@ -24,31 +24,27 @@ class Router
 
     public function setUri()
     {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH); // sin query params
-        $segments = explode('/', trim($uri, '/')); // quita / inicial y final
-        $this->uri = array_values(array_filter($segments)); // limpia vacíos y reindexa
+        $this->uri = explode('/', $_SERVER['REQUEST_URI']);
     }
-
 
     public function setController()
     {
-        $this->controller = $this->uri[0] ?? 'not_found';
+        $this->controller = $this->uri[1] === '' ? 'not_found' : $this->uri[1];
     }
 
     public function setMethod()
     {
-        $this->method = $this->uri[1] ?? '';
+        $this->method = !empty($this->uri[2]) ? $this->uri[2] : '';
     }
 
     public function setParam()
     {
-        $this->param = $this->uri[2] ?? '';
+        $this->param = !empty($this->uri[3]) ? $this->uri[3] : '';
     }
-
     public function setExtra()
     {
-        $this->extra = $this->uri[3] ?? '';
-    }
+        $this->extra = !empty($this->uri[4]) ? $this->uri[4] : '';
+    } 
 
     public function getUri()
     {
