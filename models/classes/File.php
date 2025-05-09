@@ -44,8 +44,8 @@ class File
         $dompdf = new Dompdf($options);
 
         // Cargar Bootstrap localmente
-        $bootstrapCSS = file_get_contents('vendor/twbs/bootstrap/dist/css/bootstrap.min.css'); 
-        
+        $bootstrapCSS = file_get_contents('vendor/twbs/bootstrap/dist/css/bootstrap.min.css');
+
 
         // Función para subrayar valores si son 1 y mostrar 0 correctamente
         function formatValue($value)
@@ -58,7 +58,7 @@ class File
             $dataFalse = file_get_contents($pathFalse);
             $base64True = 'data:image/' . $typeTrue . ';base64,' . base64_encode($dataTrue);
             $base64False = 'data:image/' . $typeFalse . ';base64,' . base64_encode($dataFalse);
-            return ($value === "1") ? "<img src='".$base64True."' width='10' height='10'>" : ($value === "0" ? "<img src='".$base64False."' width='10' height='10'>" : $value);
+            return ($value === "1") ? "<img src='" . $base64True . "' width='10' height='10'>" : ($value === "0" ? "<img src='" . $base64False . "' width='10' height='10'>" : $value);
         }
 
         $path = 'assets/images/logo_ceraor.png';
@@ -67,28 +67,28 @@ class File
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
         /* var_dump($info);
         die(); */
-        if(array_key_exists('barcode', $info)){
-            $pathBarcode = "appointments-barcodes/".$info['barcode'];
+        if (array_key_exists('barcode', $info)) {
+            $pathBarcode = "appointments-barcodes/" . $info['barcode'];
             $typeBarcode = pathinfo($pathBarcode, PATHINFO_EXTENSION);
             $dataBarcode = file_get_contents($pathBarcode);
             $base64Barcode = 'data:image/' . $typeBarcode . ';base64,' . base64_encode($dataBarcode);
-        }else{
+        } else {
             $pathBarcode = $info['barcode'] = "assets/images/sin-folio.png";
-            
+
             $typeBarcode = pathinfo($pathBarcode, PATHINFO_EXTENSION);
             $dataBarcode = file_get_contents($pathBarcode);
             $base64Barcode = 'data:image/' . $typeBarcode . ';base64,' . base64_encode($dataBarcode);
         }
 
-        if(!array_key_exists('code', $info)){
+        if (!array_key_exists('code', $info)) {
             $info['code'] = "sin-folio";
         }
-        if(!array_key_exists('order_created_at', $info)){
+        if (!array_key_exists('order_created_at', $info)) {
             $info['order_created_at'] =  date("Y-m-d");
             echo $info['order_created_at'];
-           /*  die(); */
+            /*  die(); */
         }
-        
+
         /* echo getcwd();
         die(); */
         // Estructura HTML con secciones bien organizadas
@@ -106,15 +106,15 @@ class File
         <table style='width: 100%;'>
             <tr>
                 <td style='width: 50%; text-align: left;'>
-                    <img src='".$base64."' width='50' height='50'>
+                    <img src='" . $base64 . "' width='50' height='50'>
                 </td>
                 <td style='width: 50%; text-align: left;'>
                     <center>
-                        <img src='".$base64Barcode."' width='200' height='50'>
+                        <img src='" . $base64Barcode . "' width='200' height='50'>
                     </center>
                 </td>
                 <td style='width: 50%; text-align: right; vertical-align: middle;'>
-                    <label style='display: block; text-align: right;'>Fecha: ".$info['order_created_at']."</label>
+                    <label style='display: block; text-align: right;'>Fecha: " . $info['order_created_at'] . "</label>
                 </td>
             </tr>
         </table>
@@ -126,7 +126,7 @@ class File
         </center>
             <table style='width: 100% !important; table-layout: fixed !important; border-spacing: 10px !important;'>
                 <thead>
-                    <th><div class='section-title'>Folio: ".$info['code']."</div></th>
+                    <th><div class='section-title'>Folio: " . $info['code'] . "</div></th>
                 </thead>
                 <tr>
                     <td style='width: 100% !important; background-color: #f2f2f2 !important; padding: 10px !important; border-radius: 1px !important; vertical-align: top !important;'>
@@ -313,7 +313,7 @@ class File
                     </td>
                 </tr>
             </table>
-            <label>Interpretación Odontológica: </label>".formatValue($info['dental_interpretation']). " 
+            <label>Interpretación Odontológica: </label>" . formatValue($info['dental_interpretation']) . " 
             </div>
             <br>
             <label>Otros:_________________________________________</label>
@@ -335,13 +335,11 @@ class File
 
         // Renderizar el PDF
         $dompdf->render();
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="documento.pdf"');
         $pdfOutput = $dompdf->output();
         $cleanCode = "";
-        if($info['code'] == 'sin-folio'){
+        if ($info['code'] == 'sin-folio') {
             $cleanCode = $info['id'];
-        }else{
+        } else {
             $cleanCode = preg_replace('/[^A-Za-z0-9_\-]/', '_', $info['code']);
         }
 
@@ -351,14 +349,10 @@ class File
         // Guardar en el servidor
         file_put_contents($filePath, $pdfOutput);
 
-        // Retornar la ruta para descargar el archivo
-        /* return $filePath; */
-        if (php_sapi_name() !== 'cli') { // Esto asegura que no estamos en modo consola
+        // Enviar encabezados al navegador para visualizar directamente
         header('Content-Type: application/pdf');
         header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
         echo $pdfOutput;
-        exit; // Asegura que no se envíe nada más
-}
-
+        exit; // Importante para evitar cualquier salida extra
     }
 }
