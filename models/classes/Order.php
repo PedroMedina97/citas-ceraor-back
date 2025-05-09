@@ -20,11 +20,11 @@ class Order extends Entity
     {
         $decodedName = strtolower(trim(urldecode($name)));
     
-        $sql = "SELECT o.*
+        $sql = "SELECT o.*,
+            a.code AS appointment_code
             FROM orders o
             LEFT JOIN appointments a ON a.id_order = o.id
-            WHERE LOWER(o.doctor) = '$decodedName'
-            AND a.id_order IS NULL;
+            WHERE LOWER(o.doctor) = '$decodedName';
         ";
     
         return Helpers::myQuery($sql);

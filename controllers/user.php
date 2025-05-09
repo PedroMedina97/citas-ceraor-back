@@ -81,6 +81,17 @@ switch ($method) {
                 }
                 echo json_encode($response);
                 break;
+            case 'getinstance':
+                $id = $router->getParam();
+                $data = $instance->getById('users', $id);
+                $response = [
+                    "status" => "success",
+                    "msg" => $data ? "Fila(s) o Elemento(s) encontrada(s)" : "Fila(s) o Elemento(s) no encontrada(s)",
+                    "data" => $data
+                ];
+
+                echo json_encode($response);
+                break;
             case 'getbyidrol':
                 if (in_array('get_user', $permissionsArray)) {
                     $id = $router->getParam();

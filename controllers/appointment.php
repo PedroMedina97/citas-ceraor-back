@@ -127,9 +127,10 @@ switch ($method) {
                     $service = $body['service'];
                     $appointment = $body['appointment'];
                     $color = $body['color'];
-                    $data = $instance->setAppointment($id_order, $client, $personal, $id_subsidiary, $service, $appointment, $color);
-                    HTTPStatus::setStatus(201);
+                    $end_appointment = $body['end_appointment']; // asegúrate de capturarlo también
+                    $data = $instance->setAppointment($id_order, $client, $personal, $id_subsidiary, $service, $appointment, $end_appointment, $color);
                     if ($data) {
+                        HTTPStatus::setStatus(201);
                         $response = [
                             "status" => "success",
                             "msg" => HTTPStatus::getMessage(201),

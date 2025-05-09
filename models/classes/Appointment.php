@@ -10,7 +10,7 @@ use Classes\Order;
 
 class Appointment extends Entity{
 
-    public function setAppointment(String $id_order = "", String $client, String $personal, String $id_subsidiary, String $service, String $appointment, String $color){
+   /*  public function setAppointment(String $id_order = "", String $client, String $personal, String $id_subsidiary, String $service, String $appointment, String $color){
         $env = new Env();
         $conn = Helpers::connect();
         $order = new Order();
@@ -41,12 +41,82 @@ class Appointment extends Entity{
         }else{
             $query = "INSERT INTO appointments (id, id_order, client, personal, id_subsidiary, service, appointment, barcode, code, color, active, created_at, updated_at) 
                   VALUES ('$id', '$id_order', '$client', '$personal', '$id_subsidiary', '$service', '$appointment', '$dataBarcode', '$data', '$color', 1, NOW(), NOW())";
-            /* $order->generateDocument($id_order); */
         }
         
         $result = Helpers::connect()->query($query);
         return $result;
+    } */
+
+    public function setAppointment(String $id_order = "", String $client, String $personal, String $id_subsidiary, String $service, String $appointment, String $end_appointment, String $color) {
+        $env = new Env();
+        $conn = Helpers::connect();
+        $order = new Order();
+    
+        // Sanitizar entradas
+        $client = mysqli_real_escape_string($conn, $client);
+        $personal = mysqli_real_escape_string($conn, $personal);
+        $id_subsidiary = mysqli_real_escape_string($conn, $id_subsidiary);
+        $service = mysqli_real_escape_string($conn, $service);
+        $appointment = mysqli_real_escape_string($conn, $appointment);
+        $end_appointment = mysqli_real_escape_string($conn, $end_appointment);
+        $color = mysqli_real_escape_string($conn, $color);
+        $id_order = mysqli_real_escape_string($conn, $id_order);
+    
+        // Validar traslape con otras citas del mismo doctor
+        $checkQuery = "SELECT COUNT(*) AS total FROM appointments
+                       WHERE personal = '$personal'
+                       AND active = 1
+                       AND (
+                           ('$appointment' < end_appointment AND '$end_appointment' > appointment)
+                       )";
+    
+        $resultCheck = $conn->query($checkQuery);
+        $row = $resultCheck->fetch_assoc();
+    
+        if ($row['total'] > 0) {
+            // Ya hay una cita en ese horario
+            return false;
+        }
+    
+        // Generar UUID y código de barras
+        $key = new Key();
+        $id = $key->generate_uuid();
+        $data = $this->generateShortUuid($id);
+    
+        $directory = 'appointments-barcodes';
+        if (!is_dir($directory)) {
+            mkdir($directory, 0777, true);
+        }
+    
+        $generator = new BarcodeGeneratorPNG();
+        $barcode = $generator->getBarcode($data, $generator::TYPE_CODE_128);
+        $dataBarcode = $data . '.png';
+        $filePath = $directory . '/' . $dataBarcode;
+        file_put_contents($filePath, $barcode);
+    
+        // Insertar cita
+        $query = "INSERT INTO appointments (id, id_order, client, personal, id_subsidiary, service, appointment, end_appointment, barcode, code, color, active, created_at, updated_at) 
+                  VALUES (
+                    '$id',
+                    " . ($id_order ? "'$id_order'" : "NULL") . ",
+                    '$client',
+                    '$personal',
+                    '$id_subsidiary',
+                    '$service',
+                    '$appointment',
+                    '$end_appointment',
+                    '$dataBarcode',
+                    '$data',
+                    '$color',
+                    1,
+                    NOW(),
+                    NOW()
+                  )";
+    
+        $result = $conn->query($query);
+        return $result;
     }
+    
     
 
     public function getByBarcode(String $code){

@@ -335,6 +335,8 @@ class File
 
         // Renderizar el PDF
         $dompdf->render();
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="documento.pdf"');
         $pdfOutput = $dompdf->output();
         $cleanCode = "";
         if($info['code'] == 'sin-folio'){
@@ -350,6 +352,13 @@ class File
         file_put_contents($filePath, $pdfOutput);
 
         // Retornar la ruta para descargar el archivo
-        return $filePath;
+        /* return $filePath; */
+        if (php_sapi_name() !== 'cli') { // Esto asegura que no estamos en modo consola
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
+        echo $pdfOutput;
+        exit; // Asegura que no se envíe nada más
+}
+
     }
 }
