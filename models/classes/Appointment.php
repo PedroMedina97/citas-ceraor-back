@@ -10,42 +10,6 @@ use Classes\Order;
 
 class Appointment extends Entity{
 
-   /*  public function setAppointment(String $id_order = "", String $client, String $personal, String $id_subsidiary, String $service, String $appointment, String $color){
-        $env = new Env();
-        $conn = Helpers::connect();
-        $order = new Order();
-        $client = mysqli_real_escape_string($conn, $client);
-        $personal = mysqli_real_escape_string($conn, $personal);
-        $id_subsidiary = mysqli_real_escape_string($conn, $id_subsidiary);
-        $service = mysqli_real_escape_string($conn, $service);
-        $appointment = mysqli_real_escape_string($conn, $appointment);
-        $color = mysqli_real_escape_string($conn, $color); // Asegurar que el color se almacene correctamente
-        $id_order = mysqli_real_escape_string($conn, $id_order);
-        $key = new Key();
-        $id = $key->generate_uuid();
-        $data = $this->generateShortUuid($id);
-    
-        $directory = 'appointments-barcodes';
-        if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
-        }
-    
-        $generator = new BarcodeGeneratorPNG();
-        $barcode = $generator->getBarcode($data, $generator::TYPE_CODE_128);
-        $dataBarcode = $data . '.png';
-        $filePath = $directory . '/' . $dataBarcode;
-        file_put_contents($filePath, $barcode);
-        if($id_order == ""){
-            $query = "INSERT INTO appointments (id, id_order, client, personal, id_subsidiary, service, appointment, barcode, code, color, active, created_at, updated_at) 
-                  VALUES ('$id', null, '$client', '$personal', '$id_subsidiary', '$service', '$appointment', '$dataBarcode', '$data', '$color', 1, NOW(), NOW())";
-        }else{
-            $query = "INSERT INTO appointments (id, id_order, client, personal, id_subsidiary, service, appointment, barcode, code, color, active, created_at, updated_at) 
-                  VALUES ('$id', '$id_order', '$client', '$personal', '$id_subsidiary', '$service', '$appointment', '$dataBarcode', '$data', '$color', 1, NOW(), NOW())";
-        }
-        
-        $result = Helpers::connect()->query($query);
-        return $result;
-    } */
 
     public function setAppointment(String $id_order = "", String $client, String $personal, String $id_subsidiary, String $service, String $appointment, String $end_appointment, String $color) {
         $env = new Env();
@@ -141,4 +105,30 @@ class Appointment extends Entity{
     
         return strtoupper($shortUuid); // Opcional: Convertir a mayúsculas para mejor legibilidad
     }
+
+    public function getBySubsidiary(String $id_subsidiary) {
+    $conn = Helpers::connect();
+    $id_subsidiary = mysqli_real_escape_string($conn, $id_subsidiary);
+
+    $query = "SELECT 
+                a.id,
+                a.client,
+                a.personal,
+                a.service,
+                srv.name AS service_name,
+                a.id_subsidiary,
+                s.name AS subsidiary_name,
+                a.color,
+                a.appointment,
+                a.end_appointment
+              FROM appointments a
+              LEFT JOIN services srv ON a.service = srv.id
+              LEFT JOIN subsidiaries s ON a.id_subsidiary = s.id
+              WHERE a.id_subsidiary = '$id_subsidiary' AND a.active = 1";
+
+    $result = $conn->query($query);
+    return $result->fetch_all(MYSQLI_ASSOC);
+}
+
+
 }

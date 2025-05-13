@@ -220,24 +220,25 @@ switch ($method) {
                 $id = $router->getParam();
                 if (in_array('update_user', $permissionsArray)) {
                     $data = $controller->update($instance, $name_table, $body);
+                    HTTPStatus::setStatus(200);
                     $response = [
                         "status" => "success",
-                        "msg" => $data ? "Fila(s) o Elemento(s) actualizado(s)" : "Fila(s) o Elemento(s) no actualizado(s)",
+                        "msg" => $data ? HTTPStatus::getMessage(200) : HTTPStatus::getMessage(400),
                         "data" => $data
                     ];
                 } else {
                     HTTPStatus::setStatus(401);
                     $response = [
                         "status" => false,
-                        "msg" => "No autorizado"
+                        "msg" => HTTPStatus::getMessage(401)
                     ];
                 }
                 echo json_encode($response);
-                break;
+            break;
 
             default:
                 echo "Método no definido para esta clase";
-                break;
+            break;
         }
 
         break;
