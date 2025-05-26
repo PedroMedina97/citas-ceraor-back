@@ -57,7 +57,7 @@ class Helpers
             }
             $data = implode(", ", $items);
             $query = "UPDATE $name_table SET $data, updated_at= NOW() WHERE id= '$id'";
-            /*  echo($query);
+             /* echo($query);
             die(); */
             $sql = $db->query($query);
         }
