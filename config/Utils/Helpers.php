@@ -34,7 +34,7 @@ class Helpers
             /* var_dump($id);
             die(); */
             $query = "INSERT INTO $name_table VALUES ('$id', $data, 1, NOW(), NOW())";
-            /*   echo($query);
+              /* echo($query);
             die(); */
             $sql = $db->query($query);
         }
@@ -224,6 +224,8 @@ class Helpers
     }
 
     public static function myQuery($query){
+        /* echo $query;
+        die(); */
         $sql = Helpers::connect()->query($query);
         return $sql->fetch_all(MYSQLI_ASSOC);
     }

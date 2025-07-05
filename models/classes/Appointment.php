@@ -76,7 +76,8 @@ class Appointment extends Entity{
                     NOW(),
                     NOW()
                   )";
-    
+        /* echo $query;
+        die(); */
         $result = $conn->query($query);
         return $result;
     }
@@ -86,7 +87,7 @@ class Appointment extends Entity{
     public function getByBarcode(String $code){
         $code = mysqli_real_escape_string(Helpers::connect(), $code);
         $query = "SELECT a.id AS appointment_id, a.code, a.appointment, a.color, a.barcode, a.client, a.personal, 
-                o.id AS order_id, o.patient, o.birthdate, o.phone, o.doctor, o.address, s.name AS subsidiary_name, srv.name AS service_name, a.created_at
+                o.id AS order_id, o.patient, o.birthdate, o.phone, o.doctor, o.address, s.name AS subsidiary_name, srv.name AS service_name, a.created_at, srv.name as service_name, srv.price
                 FROM appointments a LEFT JOIN orders o ON a.id_order = o.id LEFT JOIN subsidiaries s ON a.id_subsidiary = s.id LEFT JOIN services srv ON a.service = srv.id 
                 WHERE a.code = '$code';";
         /* $query = "SELECT * FROM appointments where code='$code' and active=1"; */
