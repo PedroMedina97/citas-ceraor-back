@@ -122,7 +122,25 @@ switch ($method) {
                 } */
                 echo json_encode($response);
             break;
-
+            case 'getdetailbyid':
+                if (in_array('get_appointment', $permissionsArray)) {
+                    $id = $router->getParam();
+                    $data = $instance->getDetailById($id);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
 
 
             default:

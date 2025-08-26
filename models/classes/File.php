@@ -401,9 +401,9 @@ class File
 
                             <tr style='font-size: 11px !important;'><td>Perfilograma </td><td>" . formatValue($info['profilogram']) . "</td></tr>
 
-                            <tr style='font-size: 11px !important;'><td>Cráneo de Watters </td><td>" . formatValue($info['watters_skull']) . "</td></tr>
+                            <tr style='font-size: 11px !important;'><td>Watters de Cráneo </td><td>" . formatValue($info['watters_skull']) . "</td></tr>
 
-                            <tr style='font-size: 11px !important;'><td>Palmar y Digitales </td><td>" . formatValue($info['palmar_digit']) . "</td></tr>
+                            <tr style='font-size: 11px !important;'><td>Dígito Palmar (Carpal) </td><td>" . formatValue($info['palmar_digit']) . "</td></tr>
 
                             <tr style='font-size: 11px !important;'><td>Otros </td><td>" . formatValue($info['others_radiography']) . "</td></tr>
 
@@ -493,7 +493,7 @@ class File
 
                         <table>
 
-                            <tr style='font-size: 11px !important;'><td>Risina</td><td>" . formatValue($info['risina']) . "</td></tr>
+                            <tr style='font-size: 11px !important;'><td>Resina</td><td>" . formatValue($info['risina']) . "</td></tr>
 
                             <tr style='font-size: 11px !important;'><td>DentalPrint</td><td>" . formatValue($info['dentalprint']) . "</td></tr>
 
@@ -501,7 +501,7 @@ class File
 
                             <tr style='font-size: 11px !important;'><td>Guía Quirúrgica</td><td>" . formatValue($info['surgical_guide']) . "</td></tr>
 
-                            <tr style='font-size: 11px !important;'><td>Pieza de Estudio</td><td>" . formatValue($info['studio_piece']) . "</td></tr>
+                            <tr style='font-size: 11px !important;'><td>Pieza: </td><td>" . formatValue($info['studio_piece']) . "</td></tr>
 
                         </table>
 
@@ -653,7 +653,7 @@ class File
 
                         <table>
 
-                            <tr style='font-size: 11px !important;'><td>STL</td><td>" . formatValue($info['stl']) . "</td><td style='font-size: 11px !important;'>Invisaligh</td><td>" . formatValue($info['invisaligh']) . "</td></tr>
+                            <tr style='font-size: 11px !important;'><td>STL</td><td>" . formatValue($info['stl']) . "</td><td style='font-size: 11px !important;'>Invisalign</td><td>" . formatValue($info['invisaligh']) . "</td></tr>
 
                             <tr style='font-size: 11px !important;'><td>OBJ</td><td>" . formatValue($info['obj']) . "</td><td style='font-size: 11px !important;'>Otros</td><td>" . formatValue($info['others_scanners']) . "</td></tr>
 
@@ -711,6 +711,244 @@ class File
         echo $pdfOutput;
         exit; // Importante para evitar cualquier salida extra
 
+    }
+
+    /**
+     * Generar PDF de etiqueta/ticket para órdenes
+     * @param array $dataTicket Datos de la orden para generar la etiqueta
+     * @return void
+     */
+    public static function generateTicketPDF(array $dataTicket)
+    {
+        if (empty($dataTicket)) {
+            throw new \Exception("No se encontraron datos para generar la etiqueta");
+        }
+
+        $info = $dataTicket[0];
+        $options = new Options();
+        $options->set('defaultFont', 'Helvetica');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+
+        // Cargar logo de la empresa
+        $logoPath = 'assets/images/logo_ceraor.png';
+        $logoType = pathinfo($logoPath, PATHINFO_EXTENSION);
+        $logoData = file_get_contents($logoPath);
+        $logoBase64 = 'data:image/' . $logoType . ';base64,' . base64_encode($logoData);
+
+        // Valores por defecto para campos faltantes
+        $orderId = $info['id_orden'] ?? 'N/A';
+        $ticketCode = $info['code_ticket'] ?? null;
+        $patientName = $info['nombre_paciente'] ?? 'N/A';
+        $doctorName = $info['nombre_doctor'] ?? 'N/A';
+        $phone = $info['telefono_contacto'] ?? 'N/A';
+        $service = $info['servicio'] ?? 'Estudio radiológico';
+        $method = $info['metodo'] ?? 'por_definir';
+        $status = $info['status'] ?? 'solicitado';
+        $updateDate = isset($info['fecha_actualizacion']) ? date('d/m/Y H:i', strtotime($info['fecha_actualizacion'])) : date('d/m/Y H:i');
+        
+        // Priorizar code_ticket sobre ID de orden
+        if (!empty($ticketCode)) {
+            $displayCode = $ticketCode;
+        } else {
+            $displayCode = $orderId;
+        }
+
+        // Mapear método a texto legible
+        $methodText = [
+            'fisico' => 'Físico',
+            'digital' => 'Digital', 
+            'ambos' => 'Físico y Digital',
+            'por_definir' => 'Por definir'
+        ];
+        $methodDisplay = $methodText[$method] ?? ucfirst($method);
+        
+        // Mapear status a texto legible
+        $statusText = [
+            'solicitado' => 'Solicitado',
+            'en_proceso' => 'En Proceso',
+            'entregado' => 'Entregado'
+        ];
+        $statusDisplay = $statusText[$status] ?? ucfirst($status);
+
+        // HTML para la etiqueta - Formato ultra compacto
+        $html = "
+        <!DOCTYPE html>
+        <html lang='es'>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Etiqueta {$displayCode}</title>
+            <style>
+                body { 
+                    margin: 0; 
+                    padding: 3px; 
+                    font-family: Arial, sans-serif; 
+                    font-size: 8px;
+                    line-height: 1.1;
+                    color: #000;
+                }
+                .ticket {
+                    width: 100%;
+                    border: 1px solid #000;
+                    padding: 4px;
+                    box-sizing: border-box;
+                }
+                .header {
+                    text-align: center;
+                    border-bottom: 1px solid #000;
+                    padding-bottom: 2px;
+                    margin-bottom: 3px;
+                }
+                .logo {
+                    max-width: 40px;
+                    height: auto;
+                }
+                .company {
+                    font-size: 10px;
+                    font-weight: bold;
+                    margin: 1px 0;
+                }
+                .order-id {
+                    font-size: 10px;
+                    font-weight: bold;
+                    text-align: center;
+                    background: #f0f0f0;
+                    padding: 2px;
+                    margin: 2px 0;
+                    border: 1px solid #000;
+                }
+                .row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 1px 0;
+                    font-size: 7px;
+                }
+                .label {
+                    font-weight: bold;
+                    width: 30%;
+                }
+                .value {
+                    width: 70%;
+                    text-align: right;
+                    font-size: 7px;
+                }
+                .method {
+                    display: inline-block;
+                    padding: 1px 3px;
+                    border-radius: 2px;
+                    font-size: 6px;
+                    font-weight: bold;
+                    color: white;
+                }
+                .m-fisico { background: #28a745; }
+                .m-digital { background: #007bff; }
+                .m-ambos { background: #6f42c1; }
+                .m-por_definir { background: #6c757d; }
+                .status {
+                    display: inline-block;
+                    padding: 1px 3px;
+                    border-radius: 2px;
+                    font-size: 6px;
+                    font-weight: bold;
+                    color: white;
+                }
+                .s-solicitado { background: #ffc107; color: #000; }
+                .s-en_proceso { background: #17a2b8; }
+                .s-entregado { background: #28a745; }
+                .footer {
+                    text-align: center;
+                    margin-top: 2px;
+                    padding-top: 2px;
+                    border-top: 1px solid #000;
+                    font-size: 6px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='ticket'>
+                <div class='header'>
+                    <img src='{$logoBase64}' class='logo'>
+                    <div class='company'>CERAOR</div>
+                </div>
+                
+                <div class='order-id'>" . (!empty($ticketCode) ? "#{$displayCode}" : "TEMP-{$displayCode}") . "</div>
+                
+                <div class='row'>
+                    <span class='label'>Paciente:</span>
+                    <span class='value'>{$patientName}</span>
+                </div>
+                
+                <div class='row'>
+                    <span class='label'>Doctor:</span>
+                    <span class='value'>{$doctorName}</span>
+                </div>
+                
+                <div class='row'>
+                    <span class='label'>Tel:</span>
+                    <span class='value'>{$phone}</span>
+                </div>
+                
+                <div class='row'>
+                    <span class='label'>Servicio:</span>
+                    <span class='value'>{$service}</span>
+                </div>
+                
+                <div class='row'>
+                    <span class='label'>Status:</span>
+                    <span class='value'>
+                        <span class='status s-{$status}'>{$statusDisplay}</span>
+                    </span>
+                </div>
+                
+                <div class='row'>
+                    <span class='label'>Entrega:</span>
+                    <span class='value'>
+                        <span class='method m-{$method}'>{$methodDisplay}</span>
+                    </span>
+                </div>
+                
+                <div class='row'>
+                    <span class='label'>Fecha:</span>
+                    <span class='value'>{$updateDate}</span>
+                </div>
+                
+                <div class='footer'>
+                    CERAOR • WhatsApp: 993-264-3105
+                </div>
+            </div>
+        </body>
+        </html>";
+
+        // Configurar y generar PDF
+        $dompdf->loadHtml($html);
+        
+        // Tamaño de etiqueta ultra compacto (60mm x 90mm aproximadamente)
+        // Convertido a puntos: 60mm = 170.08pt, 90mm = 255.12pt
+        $dompdf->setPaper([0, 0, 170.08, 255.12], 'portrait');
+        
+        $dompdf->render();
+        $pdfOutput = $dompdf->output();
+
+        // Nombre del archivo usando código de ticket si existe
+        $cleanCode = preg_replace('/[^A-Za-z0-9_\-]/', '_', $displayCode);
+        
+        // Crear carpeta si no existe
+        $ticketsDir = 'docs/tickets';
+        if (!is_dir($ticketsDir)) {
+            mkdir($ticketsDir, 0755, true);
+        }
+        
+        $filePath = $ticketsDir . '/ticket_' . $cleanCode . '.pdf';
+        
+        // Guardar archivo
+        file_put_contents($filePath, $pdfOutput);
+
+        // Enviar al navegador
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="ticket_' . $cleanCode . '.pdf"');
+        echo $pdfOutput;
+        exit;
     }
 
     public static function generateCashCutPDF(array $info)

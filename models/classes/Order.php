@@ -19,7 +19,6 @@ class Order extends Entity
     public function getOrdersByDoctor(String $name)
     {
         $decodedName = strtolower(trim(urldecode($name)));
-    
         $sql = "SELECT o.*,
                 a.code AS appointment_code
             FROM orders o
@@ -108,6 +107,10 @@ class Order extends Entity
         $maxilar_both = isset($body["maxilar_both"]) ? $body["maxilar_both"] : 0;
         $maxilar_others = isset($body["maxilar_others"]) ? $body["maxilar_others"] : NULL;
         $dental_interpretation = isset($body["dental_interpretation"]) ? $body["dental_interpretation"] : 0;
+        
+        // Nuevas columnas status y method
+        $status = isset($body["status"]) ? $body["status"] : 'solicitado';
+        $method = isset($body["method"]) ? $body["method"] : 'por_definir';
 
         $query = "INSERT INTO $name_table (
                     id, patient, birthdate, phone, doctor, address, professional_id, email, 
@@ -123,7 +126,7 @@ class Order extends Entity
                     lateral_left_tomography_open_close, lateral_right_tomography_open_close, ondemand,
                     dicom, tomography_piece, implant, impacted_tooth, others_tomography, stl, obj, ply, 
                     invisaligh, others_scanners, maxilar_superior, maxilar_inferior, maxilar_both, maxilar_others, dental_interpretation,
-                    active, created_at, updated_at
+                    status, method, active, created_at, updated_at
                 ) VALUES (
                     '$id', '$patient', '$birthdate', '$phone', '$doctor', '$address', 
                     '$professional_id', '$email', $acetate_print, $paper_print, $send_email, 
@@ -139,7 +142,7 @@ class Order extends Entity
                     $lateral_left_tomography_open_close, $lateral_right_tomography_open_close, '$ondemand',
                     '$dicom', '$tomography_piece', '$implant', '$impacted_tooth', '$others_tomography', $stl, $obj, 
                     $ply, $invisaligh, '$others_scanners', $maxilar_superior, $maxilar_inferior, $maxilar_both, 
-                    '$maxilar_others', $dental_interpretation, 1, NOW(), NOW()
+                    '$maxilar_others', $dental_interpretation, '$status', '$method', 1, NOW(), NOW()
         );";
        /*  echo $query;
         die(); */
@@ -158,7 +161,8 @@ class Order extends Entity
                 a.code AS appointment_code
                 FROM orders o
                 LEFT JOIN appointments a ON a.id_order = o.id
-                WHERE o.active = 1;";
+                WHERE o.active = 1
+                ORDER BY o.created_at DESC;";
         return Helpers::myQuery($sql);    
     }
 
@@ -247,6 +251,8 @@ class Order extends Entity
         o.maxilar_both,
         o.maxilar_others,
         o.dental_interpretation,
+        o.status,
+        o.method,
         o.active AS order_active,
         o.created_at AS order_created_at,
         o.updated_at AS order_updated_at
@@ -261,11 +267,264 @@ class Order extends Entity
         return $file->generatePDF($data);
     }
 
+    public function getDetailsById(String $id)
+    {
+        $query = "SELECT *  FROM orders WHERE id='$id' AND active =1 LIMIT 1;";
+        return Helpers::myQuery($query);
+    }
+
+    public function generateTicket(String $id)
+    {
+        $query = "SELECT 
+                    o.id AS id_orden, 
+                    o.patient AS nombre_paciente, 
+                    o.phone AS telefono_contacto, 
+                    o.updated_at AS fecha_actualizacion, 
+                    o.doctor AS nombre_doctor, 
+                    o.method AS metodo, 
+                    o.code_ticket,
+                    o.status,
+                    s.name AS servicio 
+                  FROM orders o 
+                  LEFT JOIN appointments a ON o.id = a.id_order 
+                  LEFT JOIN services s ON a.service = s.id 
+                  WHERE o.id = '$id' AND o.active = 1;";
+        /* echo $query; */
+        $data = Helpers::myQuery($query);
+        
+        if (empty($data)) {
+            throw new \Exception("Orden no encontrada");
+        }
+        
+        // Verificar si la orden está entregada pero no tiene code_ticket
+        $orderData = $data[0];
+        if ($orderData['status'] === 'entregado' && empty($orderData['code_ticket'])) {
+            // Intentar generar el código de ticket si la orden está entregada
+            try {
+                $this->generateAndAssignTicketCode($id);
+                // Volver a consultar los datos actualizados
+                $data = Helpers::myQuery($query);
+            } catch (\Exception $e) {
+                error_log("Error generando código de ticket para orden $id: " . $e->getMessage());
+            }
+        }
+        
+        $file = new File();
+        return $file->generateTicketPDF($data);
+    }
+   
+
     public function generateDocumentById(String $id)
     {
         $query = "SELECT *  FROM orders WHERE id='$id' AND active =1 LIMIT 1;";
         $data = Helpers::myQuery($query);
         $file = new File();
         return $file->generatePDF($data);
+    }
+
+    /**
+     * Actualizar el status de una orden
+     * @param String $id ID de la orden
+     * @param String $status Nuevo status (solicitado, en_proceso, entregado)
+     * @return bool Resultado de la operación
+     */
+    public function updateOrderStatus(String $id, String $status)
+    {
+        // Validar que el status sea uno de los valores permitidos
+        $allowedStatuses = ['solicitado', 'en_proceso', 'entregado'];
+        if (!in_array($status, $allowedStatuses)) {
+            throw new \Exception("Status no válido. Valores permitidos: " . implode(', ', $allowedStatuses));
+        }
+
+        $query = "UPDATE orders SET status = '$status', updated_at = NOW() WHERE id = '$id' AND active = 1";
+        /* echo $query;
+        die(); */
+        $sql = Helpers::connect()->query($query);
+        
+        if (!$sql) {
+            throw new \Exception(mysqli_error(Helpers::connect()));
+        }
+        
+        // Si el status es 'entregado', generar código de ticket automáticamente
+        if ($status === 'entregado') {
+            try {
+                $this->generateAndAssignTicketCode($id);
+            } catch (\Exception $e) {
+                // Log del error pero no fallar la actualización del status
+                error_log("Error generando código de ticket para orden $id: " . $e->getMessage());
+            }
+        }
+        
+        return $sql;
+    }
+
+    /**
+     * Actualizar el método de una orden
+     * @param String $id ID de la orden
+     * @param String $method Nuevo método (fisico, digital, ambos, por_definir)
+     * @return bool Resultado de la operación
+     */
+    public function updateOrderMethod(String $id, String $method)
+    {
+        // Validar que el method sea uno de los valores permitidos
+        $allowedMethods = ['fisico', 'digital', 'ambos', 'por_definir'];
+        if (!in_array($method, $allowedMethods)) {
+            throw new \Exception("Método no válido. Valores permitidos: " . implode(', ', $allowedMethods));
+        }
+
+        $query = "UPDATE orders SET method = '$method', updated_at = NOW() WHERE id = '$id' AND active = 1";
+        $sql = Helpers::connect()->query($query);
+        
+        if (!$sql) {
+            throw new \Exception(mysqli_error(Helpers::connect()));
+        }
+        
+        return $sql;
+    }
+
+    /**
+     * Obtener órdenes filtradas por status
+     * @param String $status Status a filtrar (solicitado, en_proceso, entregado)
+     * @return array Órdenes encontradas
+     */
+    public function getOrdersByStatus(String $status)
+    {
+        $allowedStatuses = ['solicitado', 'en_proceso', 'entregado'];
+        if (!in_array($status, $allowedStatuses)) {
+            throw new \Exception("Status no válido. Valores permitidos: " . implode(', ', $allowedStatuses));
+        }
+
+        $sql = "SELECT o.*, 
+                a.code AS appointment_code
+                FROM orders o
+                LEFT JOIN appointments a ON a.id_order = o.id
+                WHERE o.active = 1 AND o.status = '$status'
+                ORDER BY o.created_at DESC;";
+        
+        return Helpers::myQuery($sql);
+    }
+
+    /**
+     * Obtener órdenes filtradas por método
+     * @param String $method Método a filtrar (fisico, digital, ambos, por_definir)
+     * @return array Órdenes encontradas
+     */
+    public function getOrdersByMethod(String $method)
+    {
+        $allowedMethods = ['fisico', 'digital', 'ambos', 'por_definir'];
+        if (!in_array($method, $allowedMethods)) {
+            throw new \Exception("Método no válido. Valores permitidos: " . implode(', ', $allowedMethods));
+        }
+
+        $sql = "SELECT o.*, 
+                a.code AS appointment_code
+                FROM orders o
+                LEFT JOIN appointments a ON a.id_order = o.id
+                WHERE o.active = 1 AND o.method = '$method'
+                ORDER BY o.created_at DESC;";
+        
+        return Helpers::myQuery($sql);
+    }
+
+    /**
+     * Generar código único y corto para ticket de orden
+     * Similar al sistema de códigos de appointments pero con prefijo TK
+     * @return string Código único de 6-8 caracteres
+     */
+    private function generateTicketCode()
+    {
+        $attempts = 0;
+        $maxAttempts = 10;
+        
+        do {
+            // Generar un hash único
+            $hash = md5(uniqid(mt_rand(), true) . microtime());
+            
+            // Convertir a base36 y tomar los primeros 6 caracteres
+            $code = 'TK' . strtoupper(substr(base_convert(substr($hash, 0, 12), 16, 36), 0, 6));
+            
+            // Verificar que el código no existe en la base de datos
+            $query = "SELECT COUNT(*) as count FROM orders WHERE code_ticket = '$code'";
+            $result = Helpers::myQuery($query);
+            $exists = $result[0]['count'] > 0;
+            
+            $attempts++;
+            
+        } while ($exists && $attempts < $maxAttempts);
+        
+        if ($attempts >= $maxAttempts) {
+            throw new \Exception("No se pudo generar un código de ticket único después de $maxAttempts intentos");
+        }
+        
+        return $code;
+    }
+
+    /**
+     * Generar y asignar código de ticket a una orden
+     * Solo se ejecuta cuando el status cambia a 'entregado'
+     * @param String $id ID de la orden
+     * @return string|null Código generado o null si ya existe
+     */
+    public function generateAndAssignTicketCode(String $id)
+    {
+        // Verificar si la orden ya tiene código de ticket
+        $query = "SELECT code_ticket FROM orders WHERE id = '$id' AND active = 1";
+        $result = Helpers::myQuery($query);
+        
+        if (empty($result)) {
+            throw new \Exception("Orden no encontrada");
+        }
+        
+        // Si ya tiene código, no generar uno nuevo
+        if (!empty($result[0]['code_ticket'])) {
+            return $result[0]['code_ticket'];
+        }
+        
+        // Generar nuevo código
+        $ticketCode = $this->generateTicketCode();
+        
+        // Actualizar la orden con el nuevo código
+        $updateQuery = "UPDATE orders SET code_ticket = '$ticketCode', updated_at = NOW() WHERE id = '$id' AND active = 1";
+        $updateResult = Helpers::connect()->query($updateQuery);
+        
+        if (!$updateResult) {
+            throw new \Exception("Error al asignar código de ticket: " . mysqli_error(Helpers::connect()));
+        }
+        
+        return $ticketCode;
+    }
+
+    /**
+     * Obtener órdenes que tienen código de ticket (entregadas)
+     * @return array Órdenes con código de ticket
+     */
+    public function getOrdersWithTicketCode()
+    {
+        $sql = "SELECT o.*, 
+                a.code AS appointment_code
+                FROM orders o
+                LEFT JOIN appointments a ON a.id_order = o.id
+                WHERE o.active = 1 AND o.code_ticket IS NOT NULL
+                ORDER BY o.updated_at DESC;";
+        
+        return Helpers::myQuery($sql);
+    }
+
+    /**
+     * Buscar orden por código de ticket
+     * @param String $ticketCode Código del ticket
+     * @return array|null Información de la orden
+     */
+    public function getOrderByTicketCode(String $ticketCode)
+    {
+        $sql = "SELECT o.*, 
+                a.code AS appointment_code
+                FROM orders o
+                LEFT JOIN appointments a ON a.id_order = o.id
+                WHERE o.active = 1 AND o.code_ticket = '$ticketCode'
+                LIMIT 1;";
+        
+        $result = Helpers::myQuery($sql);
+        return !empty($result) ? $result[0] : null;
     }
 }

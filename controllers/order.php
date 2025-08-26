@@ -93,8 +93,26 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
+            break;
+            case 'getticket':
+                if (in_array('update_order', $permissionsArray)) {
+                    $id = $router->getParam();
+                    $data = $instance->generateTicket($id);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
                 break;
-
             case 'getbyappointment':
                 if (in_array('get_order', $permissionsArray)) {
                     $id = $router->getParam();
@@ -118,23 +136,67 @@ switch ($method) {
             case 'generatedocument':
                 if ($router->getParam()) {
                     $id = $router->getParam();
-                    $data = $instance->generateDocument($name_table, $id);
-                    HTTPStatus::setStatus(200);
-                    $response = [
-                        "status" => "success",
-                        "msg" => HTTPStatus::getMessage(200),
-                        "data" => $data
-                    ];
+                    try {
+                        // Este método genera y envía directamente el PDF
+                        // No retorna datos, sino que hace output directo
+                        $instance->generateDocumentById($id);
+                        // Si llegamos aquí, hubo un error porque generateDocument() debería hacer exit
+                        HTTPStatus::setStatus(500);
+                        $response = [
+                            "status" => false,
+                            "msg" => "Error interno generando el documento"
+                        ];
+                        echo json_encode($response);
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                        echo json_encode($response);
+                    }
                 } else {
                     HTTPStatus::setStatus(404);
                     $response = [
                         "status" => false,
-                        "msg" => HTTPStatus::getMessage(204)
+                        "msg" => HTTPStatus::getMessage(404)
                     ];
+                    echo json_encode($response);
                 }
-                echo json_encode($response);
                 break;
-                
+
+            case 'generateticket':
+                if ($router->getParam()) {
+                    $id = $router->getParam();
+                    try {
+                        // Este método genera y envía directamente el PDF
+                        // No retorna datos, sino que hace output directo
+                        $instance->generateTicket($id);
+                        // Si llegamos aquí, hubo un error porque generateTicket() debería hacer exit
+                        HTTPStatus::setStatus(500);
+                        $response = [
+                            "status" => false,
+                            "msg" => "Error interno generando el ticket"
+                        ];
+                        echo json_encode($response);
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                        echo json_encode($response);
+                    }
+                } else {
+                    HTTPStatus::setStatus(404);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(404)
+                    ];
+                    echo json_encode($response);
+                }
+                break;
+
             case 'getbydoctor':
                 if (in_array('get_order', $permissionsArray)) {
                     $name = $router->getParam();
@@ -153,8 +215,83 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-
                 break;
+
+            case 'getbystatus':
+                if (in_array('get_order', $permissionsArray)) {
+                    $status = $router->getParam();
+                    try {
+                        $data = $instance->getOrdersByStatus($status);
+                        HTTPStatus::setStatus(200);
+                        $response = [
+                            "status" => "success",
+                            "msg" => HTTPStatus::getMessage(200),
+                            "data" => $data
+                        ];
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
+
+            case 'getbymethod':
+                if (in_array('get_order', $permissionsArray)) {
+                    $method = $router->getParam();
+                    try {
+                        $data = $instance->getOrdersByMethod($method);
+                        HTTPStatus::setStatus(200);
+                        $response = [
+                            "status" => "success",
+                            "msg" => HTTPStatus::getMessage(200),
+                            "data" => $data
+                        ];
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
+            case 'getdetailsbyid':
+                if (in_array('get_order', $permissionsArray)) {
+                    $id = $router->getParam();
+                    $data = $instance->getDetailsById($id);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
+
             default:
                 HTTPStatus::setStatus(404);
                 $response = [
@@ -186,6 +323,69 @@ switch ($method) {
                 }
                 echo json_encode($response);
                 break;
+
+            case 'getbyticketcode':
+                if (in_array('get_order', $permissionsArray)) {
+                    $ticketCode = $router->getParam();
+                    try {
+                        $data = $instance->getOrderByTicketCode($ticketCode);
+                        if ($data) {
+                            HTTPStatus::setStatus(200);
+                            $response = [
+                                "status" => "success",
+                                "msg" => HTTPStatus::getMessage(200),
+                                "data" => $data
+                            ];
+                        } else {
+                            HTTPStatus::setStatus(404);
+                            $response = [
+                                "status" => false,
+                                "msg" => "Orden no encontrada con ese código de ticket"
+                            ];
+                        }
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
+
+            case 'getwithticketcode':
+                if (in_array('get_order', $permissionsArray)) {
+                    try {
+                        $data = $instance->getOrdersWithTicketCode();
+                        HTTPStatus::setStatus(200);
+                        $response = [
+                            "status" => "success",
+                            "msg" => HTTPStatus::getMessage(200),
+                            "data" => $data
+                        ];
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
             default:
                 echo "Método no definido para esta clase";
                 break;
@@ -203,6 +403,84 @@ switch ($method) {
                         "msg" => HTTPStatus::getMessage(200),
                         "data" => $data
                     ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
+
+            case 'updatestatus':
+                /* var_dump($body);
+                die(); */
+                if (in_array('update_order', $permissionsArray)) {
+                    try {
+                        $id = $router->getParam();
+                        $status = $body['status'] ?? null;
+
+                        if (!$id || !$status) {
+                            HTTPStatus::setStatus(400);
+                            $response = [
+                                "status" => false,
+                                "msg" => "ID y status son requeridos"
+                            ];
+                        } else {
+                            $data = $instance->updateOrderStatus($id, $status);
+                            HTTPStatus::setStatus(200);
+                            $response = [
+                                "status" => "success",
+                                "msg" => HTTPStatus::getMessage(200),
+                                "data" => $data
+                            ];
+                        }
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
+
+            case 'updatemethod':
+                if (in_array('update_order', $permissionsArray)) {
+                    try {
+                        $id = $router->getParam();
+                        $method = $body['method'] ?? null;
+
+                        if (!$id || !$method) {
+                            HTTPStatus::setStatus(400);
+                            $response = [
+                                "status" => false,
+                                "msg" => "ID y method son requeridos"
+                            ];
+                        } else {
+                            $data = $instance->updateOrderMethod($id, $method);
+                            HTTPStatus::setStatus(200);
+                            $response = [
+                                "status" => "success",
+                                "msg" => HTTPStatus::getMessage(200),
+                                "data" => $data
+                            ];
+                        }
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                    }
                 } else {
                     HTTPStatus::setStatus(401);
                     $response = [

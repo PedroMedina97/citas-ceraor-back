@@ -107,6 +107,24 @@ class Appointment extends Entity{
         return strtoupper($shortUuid); // Opcional: Convertir a mayúsculas para mejor legibilidad
     }
 
+    function getDetailById(String $id){
+        $sql = "SELECT a.id AS appointment_id,
+                a.client AS patient_name, s.name AS subsidiary_name,
+                sv.name AS service_name, sv.price AS service_price,
+                a.appointment AS appointment_datetime, a.personal AS staff_name
+                FROM appointments a LEFT JOIN subsidiaries s ON a.id_subsidiary = s.id
+                LEFT JOIN services sv ON a.service = sv.id WHERE a.id = '$id';";
+        Try{
+            return Helpers::myQuery($sql);
+
+        }catch (\Exception $e){
+            return [
+                'error' => true,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
     public function getBySubsidiary(String $id_subsidiary) {
     $conn = Helpers::connect();
     $id_subsidiary = mysqli_real_escape_string($conn, $id_subsidiary);
