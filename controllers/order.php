@@ -28,7 +28,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $path = isset($router) ? $router->getMethod() : null;
 
 // Verificar si la ruta es diferente de "login"
-if ($path !== 'login' && $path !== 'generatedocument') {
+if ($path !== 'login' && $path !== 'generatedocument' && $path !== 'generatedocumentbycode') {
     // Si el token no existe o no es válido, regresar "401 No autorizado"
     if (is_null($token) || is_null($decoded)) {
         HTTPStatus::setStatus(401);
@@ -136,10 +136,13 @@ switch ($method) {
             case 'generatedocument':
                 if ($router->getParam()) {
                     $id = $router->getParam();
+                    $extra = $router->getExtra(); // Obtener parámetro extra para disposición
+                    $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
+                    
                     try {
                         // Este método genera y envía directamente el PDF
                         // No retorna datos, sino que hace output directo
-                        $instance->generateDocumentById($id);
+                        $instance->generateDocumentById($id, $disposition);
                         // Si llegamos aquí, hubo un error porque generateDocument() debería hacer exit
                         HTTPStatus::setStatus(500);
                         $response = [
@@ -168,10 +171,13 @@ switch ($method) {
             case 'generateticket':
                 if ($router->getParam()) {
                     $id = $router->getParam();
+                    $extra = $router->getExtra(); // Obtener parámetro extra para disposición
+                    $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
+                    
                     try {
-                        // Este método genera y envía directamente el PDF
+                        // Este método genera y envía directamente el PDF del ticket
                         // No retorna datos, sino que hace output directo
-                        $instance->generateTicket($id);
+                        $instance->generateTicket($id, $disposition);
                         // Si llegamos aquí, hubo un error porque generateTicket() debería hacer exit
                         HTTPStatus::setStatus(500);
                         $response = [
@@ -192,6 +198,41 @@ switch ($method) {
                     $response = [
                         "status" => false,
                         "msg" => HTTPStatus::getMessage(404)
+                    ];
+                    echo json_encode($response);
+                }
+                break;
+
+            case 'generatedocumentbycode':
+                if ($router->getParam()) {
+                    $code = $router->getParam();
+                    $extra = $router->getExtra(); // Obtener parámetro extra para disposición
+                    $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
+                    
+                    try {
+                        // Este método genera y envía directamente el PDF por código de cita
+                        // No retorna datos, sino que hace output directo
+                        $instance->generateDocument($code, $disposition);
+                        // Si llegamos aquí, hubo un error porque generateDocument() debería hacer exit
+                        HTTPStatus::setStatus(500);
+                        $response = [
+                            "status" => false,
+                            "msg" => "Error interno generando el documento"
+                        ];
+                        echo json_encode($response);
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
+                        ];
+                        echo json_encode($response);
+                    }
+                } else {
+                    HTTPStatus::setStatus(404);
+                    $response = [
+                        "status" => false,
+                        "msg" => "Código de cita no proporcionado"
                     ];
                     echo json_encode($response);
                 }

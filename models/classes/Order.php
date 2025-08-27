@@ -166,7 +166,7 @@ class Order extends Entity
         return Helpers::myQuery($sql);    
     }
 
-    public function generateDocument(String $code)
+    public function generateDocument(String $code, string $disposition = 'inline')
     {
         $data = Helpers::myQuery("SELECT 
         a.id AS appointment_id,
@@ -264,7 +264,7 @@ class Order extends Entity
             LIMIT 1;
             ");
         $file = new File();
-        return $file->generatePDF($data);
+        return $file->generatePDF($data, $disposition);
     }
 
     public function getDetailsById(String $id)
@@ -273,7 +273,7 @@ class Order extends Entity
         return Helpers::myQuery($query);
     }
 
-    public function generateTicket(String $id)
+    public function generateTicket(String $id, string $disposition = 'inline')
     {
         $query = "SELECT 
                     o.id AS id_orden, 
@@ -310,17 +310,21 @@ class Order extends Entity
         }
         
         $file = new File();
-        return $file->generateTicketPDF($data);
+        return $file->generateTicketPDF($data, $disposition);
     }
    
 
-    public function generateDocumentById(String $id)
+    public function generateDocumentById(String $id, string $disposition = 'inline')
     {
         $query = "SELECT *  FROM orders WHERE id='$id' AND active =1 LIMIT 1;";
         $data = Helpers::myQuery($query);
         $file = new File();
-        return $file->generatePDF($data);
+        return $file->generatePDF($data, $disposition);
     }
+
+
+
+
 
     /**
      * Actualizar el status de una orden

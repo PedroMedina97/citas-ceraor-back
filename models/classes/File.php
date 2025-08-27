@@ -9,7 +9,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class File
 {
-    public static function generatePDF(array $dataPDF)
+    public static function generatePDF(array $dataPDF, string $disposition = 'inline')
     {
 
         $info = $dataPDF[0];
@@ -707,7 +707,7 @@ class File
         $filePath = 'docs/' . $cleanCode . '.pdf';
         file_put_contents($filePath, $pdfOutput);
         header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="' . basename($filePath) . '"');
+        header('Content-Disposition: ' . $disposition . '; filename="' . basename($filePath) . '"');
         echo $pdfOutput;
         exit; // Importante para evitar cualquier salida extra
 
@@ -718,7 +718,7 @@ class File
      * @param array $dataTicket Datos de la orden para generar la etiqueta
      * @return void
      */
-    public static function generateTicketPDF(array $dataTicket)
+    public static function generateTicketPDF(array $dataTicket, string $disposition = 'inline')
     {
         if (empty($dataTicket)) {
             throw new \Exception("No se encontraron datos para generar la etiqueta");
@@ -946,7 +946,7 @@ class File
 
         // Enviar al navegador
         header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="ticket_' . $cleanCode . '.pdf"');
+        header('Content-Disposition: ' . $disposition . '; filename="ticket_' . $cleanCode . '.pdf"');
         echo $pdfOutput;
         exit;
     }
