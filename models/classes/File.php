@@ -838,51 +838,70 @@ class File
             <style>
                 body { 
                     margin: 0; 
-                    padding: 4px; 
+                    padding: 20px; 
                     font-family: Arial, sans-serif; 
-                    font-size: 8px;
-                    line-height: 1.1;
+                    font-size: 16px;
+                    line-height: 1.5;
                     color: #000;
+                    height: 100vh;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
                 }
                 .ticket {
                     width: 100%;
-                    height: 100%;
+                    max-width: 500px;
+                    margin: 0 auto;
+                    border: 2px solid #000;
+                    padding: 30px;
+                    box-sizing: border-box;
                     display: flex;
+                    flex-direction: column;
                     align-items: center;
                 }
-                .left-section {
-                    width: 28%;
+                .header-section {
                     text-align: center;
-                    padding-right: 6px;
-                    border-right: 1px solid #000;
+                    margin-bottom: 30px;
+                    padding-bottom: 20px;
+                    border-bottom: 2px solid #000;
+                    width: 100%;
                 }
                 .logo {
-                    max-width: 35px;
+                    max-width: 100px;
                     height: auto;
-                    margin-bottom: 2px;
+                    margin-bottom: 10px;
                 }
                 .company {
-                    font-size: 9px;
+                    font-size: 24px;
                     font-weight: bold;
                     color: #000;
+                    margin-bottom: 5px;
+                }
+                .subtitle {
+                    font-size: 14px;
+                    color: #666;
+                    margin-bottom: 10px;
                 }
                 .info-section {
-                    width: 72%;
-                    padding-left: 6px;
+                    width: 100%;
+                    max-width: 400px;
                 }
                 .info-row {
                     display: flex;
-                    margin-bottom: 3px;
+                    margin-bottom: 15px;
+                    padding: 10px;
+                    background-color: #f9f9f9;
+                    border-radius: 5px;
                     align-items: center;
                 }
                 .label {
                     font-weight: bold;
-                    width: 50px;
-                    font-size: 7px;
+                    width: 120px;
+                    font-size: 14px;
                     color: #333;
                 }
                 .value {
-                    font-size: 8px;
+                    font-size: 16px;
                     color: #000;
                     flex: 1;
                 }
@@ -890,9 +909,10 @@ class File
         </head>
         <body>
             <div class='ticket'>
-                <div class='left-section'>
+                <div class='header-section'>
                     <img src='{$logoBase64}' class='logo'>
                     <div class='company'>CERAOR</div>
+                    <div class='subtitle'>Centro de Radiología Oral y Maxilofacial</div>
                 </div>
                 
                 <div class='info-section'>
@@ -928,9 +948,8 @@ class File
         // Configurar y generar PDF
         $dompdf->loadHtml($html);
         
-        // Tamaño mínimo horizontal (85mm x 55mm - similar a tarjeta de presentación)
-        // Convertido a puntos: 85mm = 240.9pt, 55mm = 155.9pt
-        $dompdf->setPaper([0, 0, 240.9, 155.9], 'landscape');
+        // Formato A4 vertical (toda la hoja)
+        $dompdf->setPaper('A4', 'portrait');
         
         $dompdf->render();
         $pdfOutput = $dompdf->output();
