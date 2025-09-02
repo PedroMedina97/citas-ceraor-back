@@ -828,7 +828,7 @@ class File
         ];
         $statusDisplay = $statusText[$status] ?? ucfirst($status);
 
-        // HTML para la etiqueta - Formato horizontal
+        // HTML para la etiqueta - Formato horizontal simplificado
         $html = "
         <!DOCTYPE html>
         <html lang='es'>
@@ -838,175 +838,88 @@ class File
             <style>
                 body { 
                     margin: 0; 
-                    padding: 3px; 
+                    padding: 10px; 
                     font-family: Arial, sans-serif; 
-                    font-size: 9px;
-                    line-height: 1.1;
+                    font-size: 12px;
+                    line-height: 1.3;
                     color: #000;
                 }
                 .ticket {
                     width: 100%;
-                    border: 1px solid #000;
-                    padding: 4px;
-                    box-sizing: border-box;
                     height: 100%;
                     display: flex;
-                    flex-direction: column;
-                }
-                .main-container {
-                    display: flex;
-                    height: 100%;
+                    align-items: center;
                 }
                 .left-section {
-                    width: 30%;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    border-right: 1px solid #000;
-                    padding-right: 5px;
+                    width: 25%;
+                    text-align: center;
+                    padding-right: 15px;
+                    border-right: 2px solid #000;
                 }
                 .logo {
-                    max-width: 45px;
+                    max-width: 60px;
                     height: auto;
-                    margin-bottom: 3px;
+                    margin-bottom: 5px;
                 }
                 .company {
-                    font-size: 11px;
+                    font-size: 14px;
                     font-weight: bold;
-                    margin-bottom: 3px;
+                    color: #000;
                 }
-                .order-id {
-                    font-size: 11px;
-                    font-weight: bold;
-                    text-align: center;
-                    background: #f0f0f0;
-                    padding: 3px 5px;
-                    border: 1px solid #000;
-                    border-radius: 2px;
-                    margin-bottom: 2px;
+                .info-section {
+                    width: 75%;
+                    padding-left: 15px;
                 }
-                .right-section {
-                    width: 70%;
-                    padding-left: 5px;
+                .info-row {
                     display: flex;
-                    flex-direction: column;
-                    justify-content: space-between;
-                }
-                .info-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 2px;
-                    flex-grow: 1;
-                }
-                .info-item {
-                    display: flex;
-                    flex-direction: column;
-                    font-size: 8px;
-                    margin-bottom: 2px;
-                }
-                .info-item.full-width {
-                    grid-column: 1 / -1;
+                    margin-bottom: 8px;
+                    align-items: center;
                 }
                 .label {
                     font-weight: bold;
-                    font-size: 7px;
-                    margin-bottom: 1px;
-                    color: #666;
+                    width: 80px;
+                    font-size: 11px;
+                    color: #333;
                 }
                 .value {
-                    font-size: 8px;
+                    font-size: 12px;
                     color: #000;
-                    word-wrap: break-word;
-                }
-                .method {
-                    display: inline-block;
-                    padding: 1px 4px;
-                    border-radius: 2px;
-                    font-size: 7px;
-                    font-weight: bold;
-                    color: white;
-                }
-                .m-fisico { background: #28a745; }
-                .m-digital { background: #007bff; }
-                .m-ambos { background: #6f42c1; }
-                .m-por_definir { background: #6c757d; }
-                .status {
-                    display: inline-block;
-                    padding: 1px 4px;
-                    border-radius: 2px;
-                    font-size: 7px;
-                    font-weight: bold;
-                    color: white;
-                }
-                .s-solicitado { background: #ffc107; color: #000; }
-                .s-en_proceso { background: #17a2b8; }
-                .s-entregado { background: #28a745; }
-                .footer {
-                    text-align: center;
-                    margin-top: 3px;
-                    padding-top: 2px;
-                    border-top: 1px solid #000;
-                    font-size: 6px;
-                    color: #666;
+                    flex: 1;
                 }
             </style>
         </head>
         <body>
             <div class='ticket'>
-                <div class='main-container'>
-                    <div class='left-section'>
-                        <img src='{$logoBase64}' class='logo'>
-                        <div class='company'>CERAOR</div>
-                        <div class='order-id'>" . (!empty($ticketCode) ? "#{$displayCode}" : "TEMP-{$displayCode}") . "</div>
-                    </div>
-                    
-                    <div class='right-section'>
-                        <div class='info-grid'>
-                            <div class='info-item full-width'>
-                                <span class='label'>PACIENTE:</span>
-                                <span class='value'>{$patientName}</span>
-                            </div>
-                            
-                            <div class='info-item'>
-                                <span class='label'>DOCTOR:</span>
-                                <span class='value'>{$doctorName}</span>
-                            </div>
-                            
-                            <div class='info-item'>
-                                <span class='label'>TELÉFONO:</span>
-                                <span class='value'>{$phone}</span>
-                            </div>
-                            
-                            <div class='info-item full-width'>
-                                <span class='label'>SERVICIO:</span>
-                                <span class='value'>{$service}</span>
-                            </div>
-                            
-                            <div class='info-item'>
-                                <span class='label'>STATUS:</span>
-                                <span class='value'>
-                                    <span class='status s-{$status}'>{$statusDisplay}</span>
-                                </span>
-                            </div>
-                            
-                            <div class='info-item'>
-                                <span class='label'>ENTREGA:</span>
-                                <span class='value'>
-                                    <span class='method m-{$method}'>{$methodDisplay}</span>
-                                </span>
-                            </div>
-                            
-                            <div class='info-item full-width'>
-                                <span class='label'>FECHA:</span>
-                                <span class='value'>{$updateDate}</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class='left-section'>
+                    <img src='{$logoBase64}' class='logo'>
+                    <div class='company'>CERAOR</div>
                 </div>
                 
-                <div class='footer'>
-                    CERAOR • WhatsApp: 993-264-3105 • www.ceraor.com
+                <div class='info-section'>
+                    <div class='info-row'>
+                        <span class='label'>Paciente:</span>
+                        <span class='value'>{$patientName}</span>
+                    </div>
+                    
+                    <div class='info-row'>
+                        <span class='label'>Doctor:</span>
+                        <span class='value'>{$doctorName}</span>
+                    </div>
+                    
+                    <div class='info-row'>
+                        <span class='label'>Teléfono:</span>
+                        <span class='value'>{$phone}</span>
+                    </div>
+                    
+                    <div class='info-row'>
+                        <span class='label'>Servicio:</span>
+                        <span class='value'>{$service}</span>
+                    </div>
+                    
+                    <div class='info-row'>
+                        <span class='label'>Fecha:</span>
+                        <span class='value'>{$updateDate}</span>
+                    </div>
                 </div>
             </div>
         </body>
@@ -1015,9 +928,8 @@ class File
         // Configurar y generar PDF
         $dompdf->loadHtml($html);
         
-        // Tamaño de etiqueta horizontal (90mm x 60mm aproximadamente)
-        // Convertido a puntos: 90mm = 255.12pt, 60mm = 170.08pt
-        $dompdf->setPaper([0, 0, 255.12, 170.08], 'landscape');
+        // Formato A4 horizontal (una hoja completa)
+        $dompdf->setPaper('A4', 'landscape');
         
         $dompdf->render();
         $pdfOutput = $dompdf->output();
