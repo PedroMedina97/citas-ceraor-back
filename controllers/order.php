@@ -239,14 +239,14 @@ switch ($method) {
                 break;
             case 'generatedocumentbyorderid':
                 if ($router->getParam()) {
-                    $code = $router->getParam();
+                    $id = $router->getParam();
                     $extra = $router->getExtra(); // Obtener parámetro extra para disposición
                     $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
 
                     try {
                         // Este método genera y envía directamente el PDF por código de cita
                         // No retorna datos, sino que hace output directo
-                        $instance->generateDocumentById($string, $disposition);
+                        $instance->generateDocumentById($id, $disposition);
                         // Si llegamos aquí, hubo un error porque generateDocument() debería hacer exit
                         HTTPStatus::setStatus(500);
                         $response = [
