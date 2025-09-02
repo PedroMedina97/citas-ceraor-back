@@ -263,6 +263,12 @@ class Order extends Entity
             ORDER BY a.created_at DESC
             LIMIT 1;
             ");
+            
+        // Validar que se encontraron datos
+        if (empty($data)) {
+            throw new \Exception("No se encontraron datos para generar el documento");
+        }
+        
         $file = new File();
         return $file->generatePDF($data, $disposition);
     }
@@ -364,6 +370,12 @@ class Order extends Entity
             ORDER BY a.created_at DESC
             LIMIT 1;
             ");
+            
+        // Validar que se encontraron datos
+        if (empty($data)) {
+            throw new \Exception("No se encontraron datos para generar el documento");
+        }
+        
         $file = new File();
         return $file->generatePDF($data, $disposition);
     } */
@@ -408,6 +420,11 @@ class Order extends Entity
             } catch (\Exception $e) {
                 error_log("Error generando código de ticket para orden $id: " . $e->getMessage());
             }
+        }
+        
+        // Validar que se encontraron datos
+        if (empty($data)) {
+            throw new \Exception("No se encontró la orden con ID: $id para generar el ticket");
         }
         
         $file = new File();
@@ -512,6 +529,12 @@ class Order extends Entity
             ORDER BY a.created_at DESC
             LIMIT 1;
             ");
+            
+        // Validar que se encontraron datos
+        if (empty($data)) {
+            throw new \Exception("No se encontró la orden con ID: $id");
+        }
+        
         $file = new File();
         return $file->generatePDF($data, $disposition);
     }

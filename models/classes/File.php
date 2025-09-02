@@ -11,8 +11,17 @@ class File
 {
     public static function generatePDF(array $dataPDF, string $disposition = 'inline')
     {
+        // Validar que el array no esté vacío
+        if (empty($dataPDF) || !isset($dataPDF[0])) {
+            throw new \Exception("No se encontraron datos para generar el PDF");
+        }
 
         $info = $dataPDF[0];
+        
+        // Validar que $info sea un array
+        if (!is_array($info)) {
+            throw new \Exception("Los datos proporcionados no tienen el formato correcto");
+        }
         $options = new Options();
         $options->set('defaultFont', 'Helvetica');
         $options->set('isHtml5ParserEnabled', true);
@@ -45,7 +54,7 @@ class File
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
         $base64Cruze = 'data:image/' . $typeCruze . ';base64,' . base64_encode($dataCruze);
 
-        if (array_key_exists('barcode', $info)) {
+        if (is_array($info) && array_key_exists('barcode', $info)) {
             $pathBarcode = "appointments-barcodes/" . $info['barcode'];
             $typeBarcode = pathinfo($pathBarcode, PATHINFO_EXTENSION);
             $dataBarcode = file_get_contents($pathBarcode);
@@ -720,11 +729,17 @@ class File
      */
     public static function generateTicketPDF(array $dataTicket, string $disposition = 'inline')
     {
-        if (empty($dataTicket)) {
+        // Validar que el array no esté vacío
+        if (empty($dataTicket) || !isset($dataTicket[0])) {
             throw new \Exception("No se encontraron datos para generar la etiqueta");
         }
 
         $info = $dataTicket[0];
+        
+        // Validar que $info sea un array
+        if (!is_array($info)) {
+            throw new \Exception("Los datos proporcionados para la etiqueta no tienen el formato correcto");
+        }
         $options = new Options();
         $options->set('defaultFont', 'Helvetica');
         $options->set('isHtml5ParserEnabled', true);
