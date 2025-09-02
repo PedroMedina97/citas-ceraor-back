@@ -877,10 +877,16 @@ class File
                     color: #000;
                     margin-bottom: 5px;
                 }
-                .subtitle {
-                    font-size: 14px;
-                    color: #666;
-                    margin-bottom: 10px;
+                .order-code {
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #000;
+                    background-color: #f0f0f0;
+                    padding: 8px 15px;
+                    border: 2px solid #000;
+                    border-radius: 5px;
+                    margin-top: 10px;
+                    display: inline-block;
                 }
                 .info-section {
                     width: 100%;
@@ -911,11 +917,15 @@ class File
             <div class='ticket'>
                 <div class='header-section'>
                     <img src='{$logoBase64}' class='logo'>
-                    <div class='company'>CERAOR</div>
-                    <div class='subtitle'>Centro de Radiología Oral y Maxilofacial</div>
+                    <div class='order-code'>" . (!empty($ticketCode) ? "#{$displayCode}" : "TEMP-{$displayCode}") . "</div>
                 </div>
                 
                 <div class='info-section'>
+                    <div class='info-row'>
+                        <span class='label'>Código:</span>
+                        <span class='value'>" . (!empty($ticketCode) ? $displayCode : "TEMPORAL-{$displayCode}") . "</span>
+                    </div>
+                    
                     <div class='info-row'>
                         <span class='label'>Paciente:</span>
                         <span class='value'>{$patientName}</span>
