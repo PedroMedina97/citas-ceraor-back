@@ -435,19 +435,19 @@ class Order extends Entity
     public function generateDocumentById(String $id, string $disposition = 'inline')
     {
         $data = Helpers::myQuery("SELECT 
-        a.id AS appointment_id,
-        a.id_order,
-        a.client,
-        a.personal,
-        a.id_subsidiary,
-        a.service,
-        a.appointment,
-        a.barcode,
-        a.code,
-        a.color,
-        a.active AS appointment_active,
-        a.created_at AS appointment_created_at,
-        a.updated_at AS appointment_updated_at,
+        COALESCE(a.id, 'N/A') AS appointment_id,
+        o.id AS id_order,
+        COALESCE(a.client, 'N/A') AS client,
+        COALESCE(a.personal, 'N/A') AS personal,
+        COALESCE(a.id_subsidiary, 'N/A') AS id_subsidiary,
+        COALESCE(a.service, 'N/A') AS service,
+        COALESCE(a.appointment, NOW()) AS appointment,
+        COALESCE(a.barcode, 'N/A') AS barcode,
+        COALESCE(a.code, 'N/A') AS code,
+        COALESCE(a.color, '#000000') AS color,
+        COALESCE(a.active, 1) AS appointment_active,
+        COALESCE(a.created_at, o.created_at) AS appointment_created_at,
+        COALESCE(a.updated_at, o.updated_at) AS appointment_updated_at,
 
         o.id AS order_id,
         o.patient,
@@ -523,10 +523,10 @@ class Order extends Entity
         o.created_at AS order_created_at,
         o.updated_at AS order_updated_at
 
-            FROM appointments a
-            JOIN orders o ON a.id_order = o.id
-            WHERE o.id = '$id'
-            ORDER BY a.created_at DESC
+            FROM orders o
+            LEFT JOIN appointments a ON a.id_order = o.id
+            WHERE o.id = '$id' AND o.active = 1
+            ORDER BY COALESCE(a.created_at, o.created_at) DESC
             LIMIT 1;
             ");
             
