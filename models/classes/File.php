@@ -828,7 +828,7 @@ class File
         ];
         $statusDisplay = $statusText[$status] ?? ucfirst($status);
 
-        // HTML para la etiqueta - Formato ultra compacto
+        // HTML para la etiqueta - Formato horizontal
         $html = "
         <!DOCTYPE html>
         <html lang='es'>
@@ -840,7 +840,7 @@ class File
                     margin: 0; 
                     padding: 3px; 
                     font-family: Arial, sans-serif; 
-                    font-size: 8px;
+                    font-size: 9px;
                     line-height: 1.1;
                     color: #000;
                 }
@@ -849,51 +849,81 @@ class File
                     border: 1px solid #000;
                     padding: 4px;
                     box-sizing: border-box;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
                 }
-                .header {
-                    text-align: center;
-                    border-bottom: 1px solid #000;
-                    padding-bottom: 2px;
-                    margin-bottom: 3px;
+                .main-container {
+                    display: flex;
+                    height: 100%;
+                }
+                .left-section {
+                    width: 30%;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    border-right: 1px solid #000;
+                    padding-right: 5px;
                 }
                 .logo {
-                    max-width: 40px;
+                    max-width: 45px;
                     height: auto;
+                    margin-bottom: 3px;
                 }
                 .company {
-                    font-size: 10px;
+                    font-size: 11px;
                     font-weight: bold;
-                    margin: 1px 0;
+                    margin-bottom: 3px;
                 }
                 .order-id {
-                    font-size: 10px;
+                    font-size: 11px;
                     font-weight: bold;
                     text-align: center;
                     background: #f0f0f0;
-                    padding: 2px;
-                    margin: 2px 0;
+                    padding: 3px 5px;
                     border: 1px solid #000;
+                    border-radius: 2px;
+                    margin-bottom: 2px;
                 }
-                .row {
+                .right-section {
+                    width: 70%;
+                    padding-left: 5px;
                     display: flex;
+                    flex-direction: column;
                     justify-content: space-between;
-                    margin: 1px 0;
-                    font-size: 7px;
+                }
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 2px;
+                    flex-grow: 1;
+                }
+                .info-item {
+                    display: flex;
+                    flex-direction: column;
+                    font-size: 8px;
+                    margin-bottom: 2px;
+                }
+                .info-item.full-width {
+                    grid-column: 1 / -1;
                 }
                 .label {
                     font-weight: bold;
-                    width: 30%;
+                    font-size: 7px;
+                    margin-bottom: 1px;
+                    color: #666;
                 }
                 .value {
-                    width: 70%;
-                    text-align: right;
-                    font-size: 7px;
+                    font-size: 8px;
+                    color: #000;
+                    word-wrap: break-word;
                 }
                 .method {
                     display: inline-block;
-                    padding: 1px 3px;
+                    padding: 1px 4px;
                     border-radius: 2px;
-                    font-size: 6px;
+                    font-size: 7px;
                     font-weight: bold;
                     color: white;
                 }
@@ -903,9 +933,9 @@ class File
                 .m-por_definir { background: #6c757d; }
                 .status {
                     display: inline-block;
-                    padding: 1px 3px;
+                    padding: 1px 4px;
                     border-radius: 2px;
-                    font-size: 6px;
+                    font-size: 7px;
                     font-weight: bold;
                     color: white;
                 }
@@ -914,63 +944,69 @@ class File
                 .s-entregado { background: #28a745; }
                 .footer {
                     text-align: center;
-                    margin-top: 2px;
+                    margin-top: 3px;
                     padding-top: 2px;
                     border-top: 1px solid #000;
                     font-size: 6px;
+                    color: #666;
                 }
             </style>
         </head>
         <body>
             <div class='ticket'>
-                <div class='header'>
-                    <img src='{$logoBase64}' class='logo'>
-                    <div class='company'>CERAOR</div>
-                </div>
-                
-                <div class='order-id'>" . (!empty($ticketCode) ? "#{$displayCode}" : "TEMP-{$displayCode}") . "</div>
-                
-                <div class='row'>
-                    <span class='label'>Paciente:</span>
-                    <span class='value'>{$patientName}</span>
-                </div>
-                
-                <div class='row'>
-                    <span class='label'>Doctor:</span>
-                    <span class='value'>{$doctorName}</span>
-                </div>
-                
-                <div class='row'>
-                    <span class='label'>Tel:</span>
-                    <span class='value'>{$phone}</span>
-                </div>
-                
-                <div class='row'>
-                    <span class='label'>Servicio:</span>
-                    <span class='value'>{$service}</span>
-                </div>
-                
-                <div class='row'>
-                    <span class='label'>Status:</span>
-                    <span class='value'>
-                        <span class='status s-{$status}'>{$statusDisplay}</span>
-                    </span>
-                </div>
-                
-                <div class='row'>
-                    <span class='label'>Entrega:</span>
-                    <span class='value'>
-                        <span class='method m-{$method}'>{$methodDisplay}</span>
-                    </span>
-                </div>
-                
-                <div class='row'>
-                    <span class='label'>Fecha:</span>
-                    <span class='value'>{$updateDate}</span>
+                <div class='main-container'>
+                    <div class='left-section'>
+                        <img src='{$logoBase64}' class='logo'>
+                        <div class='company'>CERAOR</div>
+                        <div class='order-id'>" . (!empty($ticketCode) ? "#{$displayCode}" : "TEMP-{$displayCode}") . "</div>
+                    </div>
+                    
+                    <div class='right-section'>
+                        <div class='info-grid'>
+                            <div class='info-item full-width'>
+                                <span class='label'>PACIENTE:</span>
+                                <span class='value'>{$patientName}</span>
+                            </div>
+                            
+                            <div class='info-item'>
+                                <span class='label'>DOCTOR:</span>
+                                <span class='value'>{$doctorName}</span>
+                            </div>
+                            
+                            <div class='info-item'>
+                                <span class='label'>TELÉFONO:</span>
+                                <span class='value'>{$phone}</span>
+                            </div>
+                            
+                            <div class='info-item full-width'>
+                                <span class='label'>SERVICIO:</span>
+                                <span class='value'>{$service}</span>
+                            </div>
+                            
+                            <div class='info-item'>
+                                <span class='label'>STATUS:</span>
+                                <span class='value'>
+                                    <span class='status s-{$status}'>{$statusDisplay}</span>
+                                </span>
+                            </div>
+                            
+                            <div class='info-item'>
+                                <span class='label'>ENTREGA:</span>
+                                <span class='value'>
+                                    <span class='method m-{$method}'>{$methodDisplay}</span>
+                                </span>
+                            </div>
+                            
+                            <div class='info-item full-width'>
+                                <span class='label'>FECHA:</span>
+                                <span class='value'>{$updateDate}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class='footer'>
-                    CERAOR • WhatsApp: 993-264-3105
+                    CERAOR • WhatsApp: 993-264-3105 • www.ceraor.com
                 </div>
             </div>
         </body>
@@ -979,9 +1015,9 @@ class File
         // Configurar y generar PDF
         $dompdf->loadHtml($html);
         
-        // Tamaño de etiqueta ultra compacto (60mm x 90mm aproximadamente)
-        // Convertido a puntos: 60mm = 170.08pt, 90mm = 255.12pt
-        $dompdf->setPaper([0, 0, 170.08, 255.12], 'portrait');
+        // Tamaño de etiqueta horizontal (90mm x 60mm aproximadamente)
+        // Convertido a puntos: 90mm = 255.12pt, 60mm = 170.08pt
+        $dompdf->setPaper([0, 0, 255.12, 170.08], 'landscape');
         
         $dompdf->render();
         $pdfOutput = $dompdf->output();
