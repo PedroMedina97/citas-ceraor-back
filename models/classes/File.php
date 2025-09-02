@@ -142,6 +142,7 @@ class File
 
                     <th style='font-size: 11px'>Tuxtla Gutiérrez</th>
 
+                    <th style='font-size: 11px'>Veracruz, Ver.</th>
                 </thead>
 
                 <tr>
@@ -243,6 +244,32 @@ class File
                             <tr>
 
                                 <td style='font-size: 10px'><b>WhatsApp: </b> 961-367-9746</td>
+
+                            </tr>
+
+                        </table>
+
+                    </td>
+
+                    <td style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
+
+                        <table>
+
+                            <tr>
+
+                                <td style='font-size: 10px'><b>Dirección: </b>Calle España No.23, Fracc. Reforma, 91919, Veracruz, Ver.</td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td style='font-size: 10px'><b>Teléfono(s): </b>229-935-9472, 229-489-1442</td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td style='font-size: 10px'><b>WhatsApp: </b> 229-117-9108</td>
 
                             </tr>
 
