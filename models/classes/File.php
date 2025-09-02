@@ -838,10 +838,10 @@ class File
             <style>
                 body { 
                     margin: 0; 
-                    padding: 10px; 
+                    padding: 4px; 
                     font-family: Arial, sans-serif; 
-                    font-size: 12px;
-                    line-height: 1.3;
+                    font-size: 8px;
+                    line-height: 1.1;
                     color: #000;
                 }
                 .ticket {
@@ -851,38 +851,38 @@ class File
                     align-items: center;
                 }
                 .left-section {
-                    width: 25%;
+                    width: 28%;
                     text-align: center;
-                    padding-right: 15px;
-                    border-right: 2px solid #000;
+                    padding-right: 6px;
+                    border-right: 1px solid #000;
                 }
                 .logo {
-                    max-width: 60px;
+                    max-width: 35px;
                     height: auto;
-                    margin-bottom: 5px;
+                    margin-bottom: 2px;
                 }
                 .company {
-                    font-size: 14px;
+                    font-size: 9px;
                     font-weight: bold;
                     color: #000;
                 }
                 .info-section {
-                    width: 75%;
-                    padding-left: 15px;
+                    width: 72%;
+                    padding-left: 6px;
                 }
                 .info-row {
                     display: flex;
-                    margin-bottom: 8px;
+                    margin-bottom: 3px;
                     align-items: center;
                 }
                 .label {
                     font-weight: bold;
-                    width: 80px;
-                    font-size: 11px;
+                    width: 50px;
+                    font-size: 7px;
                     color: #333;
                 }
                 .value {
-                    font-size: 12px;
+                    font-size: 8px;
                     color: #000;
                     flex: 1;
                 }
@@ -928,8 +928,9 @@ class File
         // Configurar y generar PDF
         $dompdf->loadHtml($html);
         
-        // Formato A4 horizontal (una hoja completa)
-        $dompdf->setPaper('A4', 'landscape');
+        // Tamaño mínimo horizontal (85mm x 55mm - similar a tarjeta de presentación)
+        // Convertido a puntos: 85mm = 240.9pt, 55mm = 155.9pt
+        $dompdf->setPaper([0, 0, 240.9, 155.9], 'landscape');
         
         $dompdf->render();
         $pdfOutput = $dompdf->output();
