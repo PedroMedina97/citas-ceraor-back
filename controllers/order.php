@@ -28,7 +28,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $path = isset($router) ? $router->getMethod() : null;
 
 // Verificar si la ruta es diferente de "login"
-if ($path !== 'login' && $path !== 'generatedocument' && $path !== 'generatedocumentbycode' && $path !== 'generatedocumentbyid') {
+if ($path !== 'login' && $path !== 'generatedocument' && $path !== 'generatedocumentbycode' && $path !== 'generatedocumentbyorderid') {
     // Si el token no existe o no es válido, regresar "401 No autorizado"
     if (is_null($token) || is_null($decoded)) {
         HTTPStatus::setStatus(401);
@@ -93,7 +93,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-            break;
+                break;
             case 'getticket':
                 if (in_array('update_order', $permissionsArray)) {
                     $id = $router->getParam();
@@ -138,7 +138,7 @@ switch ($method) {
                     $id = $router->getParam();
                     $extra = $router->getExtra(); // Obtener parámetro extra para disposición
                     $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
-                    
+
                     try {
                         // Este método genera y envía directamente el PDF
                         // No retorna datos, sino que hace output directo
@@ -173,7 +173,7 @@ switch ($method) {
                     $id = $router->getParam();
                     $extra = $router->getExtra(); // Obtener parámetro extra para disposición
                     $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
-                    
+
                     try {
                         // Este método genera y envía directamente el PDF del ticket
                         // No retorna datos, sino que hace output directo
@@ -208,7 +208,7 @@ switch ($method) {
                     $code = $router->getParam();
                     $extra = $router->getExtra(); // Obtener parámetro extra para disposición
                     $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
-                    
+
                     try {
                         // Este método genera y envía directamente el PDF por código de cita
                         // No retorna datos, sino que hace output directo
@@ -237,40 +237,40 @@ switch ($method) {
                     echo json_encode($response);
                 }
                 break;
-                case 'generatedocumentbyid':
-                    if ($router->getParam()) {
-                        $code = $router->getParam();
-                        $extra = $router->getExtra(); // Obtener parámetro extra para disposición
-                        $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
-                        
-                        try {
-                            // Este método genera y envía directamente el PDF por código de cita
-                            // No retorna datos, sino que hace output directo
-                            $instance->generateDocumentById($string, $disposition);
-                            // Si llegamos aquí, hubo un error porque generateDocument() debería hacer exit
-                            HTTPStatus::setStatus(500);
-                            $response = [
-                                "status" => false,
-                                "msg" => "Error interno generando el documento"
-                            ];
-                            echo json_encode($response);
-                        } catch (Exception $e) {
-                            HTTPStatus::setStatus(400);
-                            $response = [
-                                "status" => false,
-                                "msg" => $e->getMessage()
-                            ];
-                            echo json_encode($response);
-                        }
-                    } else {
-                        HTTPStatus::setStatus(404);
+            case 'generatedocumentbyorderid':
+                if ($router->getParam()) {
+                    $code = $router->getParam();
+                    $extra = $router->getExtra(); // Obtener parámetro extra para disposición
+                    $disposition = ($extra && $extra === 'download') ? 'attachment' : 'inline';
+
+                    try {
+                        // Este método genera y envía directamente el PDF por código de cita
+                        // No retorna datos, sino que hace output directo
+                        $instance->generateDocumentById($string, $disposition);
+                        // Si llegamos aquí, hubo un error porque generateDocument() debería hacer exit
+                        HTTPStatus::setStatus(500);
                         $response = [
                             "status" => false,
-                            "msg" => "Código de cita no proporcionado"
+                            "msg" => "Error interno generando el documento"
+                        ];
+                        echo json_encode($response);
+                    } catch (Exception $e) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => $e->getMessage()
                         ];
                         echo json_encode($response);
                     }
-                    break;
+                } else {
+                    HTTPStatus::setStatus(404);
+                    $response = [
+                        "status" => false,
+                        "msg" => "Código de cita no proporcionado"
+                    ];
+                    echo json_encode($response);
+                }
+                break;
             case 'getbydoctor':
                 if (in_array('get_order', $permissionsArray)) {
                     $name = $router->getParam();
