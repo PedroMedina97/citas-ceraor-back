@@ -836,6 +836,11 @@ class File
             <meta charset='UTF-8'>
             <title>Etiqueta {$displayCode}</title>
             <style>
+                @page {
+                    size: A4 landscape;
+                    margin: 10mm 12mm;
+                }
+
                 body { 
                     margin: 0; 
                     padding: 20px; 
@@ -850,7 +855,7 @@ class File
                 }
                 .ticket {
                     width: 100%;
-                    max-width: 500px;
+                    max-width: 720px;
                     margin: 0 auto;
                     border: 2px solid #000;
                     padding: 30px;
@@ -890,7 +895,7 @@ class File
                 }
                 .info-section {
                     width: 100%;
-                    max-width: 400px;
+                    max-width: 600px;
                 }
                 .info-row {
                     display: flex;
@@ -959,7 +964,7 @@ class File
         $dompdf->loadHtml($html);
         
         // Formato A4 vertical (toda la hoja)
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
         
         $dompdf->render();
         $pdfOutput = $dompdf->output();
