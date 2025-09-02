@@ -54,20 +54,34 @@ class File
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
         $base64Cruze = 'data:image/' . $typeCruze . ';base64,' . base64_encode($dataCruze);
 
-        if (is_array($info) && array_key_exists('barcode', $info)) {
+        // Verificar si existe barcode y el archivo existe
+        if (is_array($info) && 
+            array_key_exists('barcode', $info) && 
+            !empty($info['barcode']) && 
+            $info['barcode'] !== 'N/A' && 
+            file_exists("appointments-barcodes/" . $info['barcode'])) {
+            
+            // Usar el código de barras existente
             $pathBarcode = "appointments-barcodes/" . $info['barcode'];
             $typeBarcode = pathinfo($pathBarcode, PATHINFO_EXTENSION);
             $dataBarcode = file_get_contents($pathBarcode);
             $base64Barcode = 'data:image/' . $typeBarcode . ';base64,' . base64_encode($dataBarcode);
         } else {
-
-            $pathBarcode = $info['barcode'] = "assets/images/sin-folio.png";
-
+            // Usar imagen de sin-folio cuando:
+            // - No hay barcode
+            // - El barcode es 'N/A' (valor por defecto)
+            // - El archivo del barcode no existe
+            $pathBarcode = "assets/images/sin-folio.png";
             $typeBarcode = pathinfo($pathBarcode, PATHINFO_EXTENSION);
-
-            $dataBarcode = file_get_contents($pathBarcode);
-
-            $base64Barcode = 'data:image/' . $typeBarcode . ';base64,' . base64_encode($dataBarcode);
+            
+            // Verificar que el archivo sin-folio existe
+            if (file_exists($pathBarcode)) {
+                $dataBarcode = file_get_contents($pathBarcode);
+                $base64Barcode = 'data:image/' . $typeBarcode . ';base64,' . base64_encode($dataBarcode);
+            } else {
+                // Fallback si sin-folio.png tampoco existe
+                $base64Barcode = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='; // 1x1 transparent pixel
+            }
         }
 
 
