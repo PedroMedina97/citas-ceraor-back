@@ -49,6 +49,7 @@ class Order extends Entity
         $acetate_print = isset($body["acetate_print"]) ? $body["acetate_print"] : 0;
         $paper_print = isset($body["paper_print"]) ? $body["paper_print"] : 0;
         $send_email = isset($body["send_email"]) ? $body["send_email"] : 0;
+        $packet = isset($body["packet"]) ? $body["packet"] : 0;
         $rx_panoramic = isset($body["rx_panoramic"]) ? $body["rx_panoramic"] : 0;
         $rx_arc_panoramic = isset($body["rx_arc_panoramic"]) ? $body["rx_arc_panoramic"] : 0;
         $rx_lateral_skull = isset($body["rx_lateral_skull"]) ? $body["rx_lateral_skull"] : 0;
@@ -114,7 +115,7 @@ class Order extends Entity
 
         $query = "INSERT INTO $name_table (
                     id, patient, birthdate, phone, doctor, address, professional_id, email, 
-                    acetate_print, paper_print, send_email, rx_panoramic, rx_arc_panoramic, 
+                    acetate_print, paper_print, send_email, packet, rx_panoramic, rx_arc_panoramic, 
                     rx_lateral_skull, ap_skull, pa_skull, paranasal_sinuses, atm_open_close, 
                     profilogram, watters_skull, palmar_digit, others_radiography, occlusal_xray, 
                     superior, inferior, complete_periapical, individual_periapical, conductometry, 
@@ -130,7 +131,7 @@ class Order extends Entity
                 ) VALUES (
                     '$id', '$patient', '$birthdate', '$phone', '$doctor', '$address', 
                     '$professional_id', '$email', $acetate_print, $paper_print, $send_email, 
-                    $rx_panoramic, $rx_arc_panoramic, $rx_lateral_skull, $ap_skull, $pa_skull, 
+                    $packet, $rx_panoramic, $rx_arc_panoramic, $rx_lateral_skull, $ap_skull, $pa_skull, 
                     $paranasal_sinuses, $atm_open_close, $profilogram, $watters_skull, 
                     $palmar_digit, '$others_radiography', $occlusal_xray, $superior, $inferior, 
                     $complete_periapical, $individual_periapical, $conductometry, 
@@ -194,6 +195,7 @@ class Order extends Entity
         o.acetate_print,
         o.paper_print,
         o.send_email,
+        o.packet,
         o.rx_panoramic,
         o.rx_arc_panoramic,
         o.rx_lateral_skull,
@@ -273,112 +275,6 @@ class Order extends Entity
         return $file->generatePDF($data, $disposition);
     }
 
-    /* public function generateDocumentById(String $id, string $disposition = 'inline')
-    {
-        $data = Helpers::myQuery("SELECT 
-        a.id AS appointment_id,
-        a.id_order,
-        a.client,
-        a.personal,
-        a.id_subsidiary,
-        a.service,
-        a.appointment,
-        a.barcode,
-        a.code,
-        a.color,
-        a.active AS appointment_active,
-        a.created_at AS appointment_created_at,
-        a.updated_at AS appointment_updated_at,
-
-        o.id AS order_id,
-        o.patient,
-        o.birthdate,
-        o.phone,
-        o.doctor,
-        o.address,
-        o.professional_id,
-        o.email,
-        o.acetate_print,
-        o.paper_print,
-        o.send_email,
-        o.rx_panoramic,
-        o.rx_arc_panoramic,
-        o.rx_lateral_skull,
-        o.ap_skull,
-        o.pa_skull,
-        o.paranasal_sinuses,
-        o.atm_open_close,
-        o.profilogram,
-        o.watters_skull,
-        o.palmar_digit,
-        o.others_radiography,
-        o.occlusal_xray,
-        o.superior,
-        o.inferior,
-        o.complete_periapical,
-        o.individual_periapical,
-        o.conductometry,
-        o.clinical_photography,
-        o.rickets,
-        o.mcnamara,
-        o.downs,
-        o.jaraback,
-        o.steiner,
-        o.others_analysis,
-        o.analysis_bolton,
-        o.analysis_moyers,
-        o.others_models_analysis,
-        o.risina,
-        o.dentalprint,
-        o.`3d_risina`,
-        o.surgical_guide,
-        o.studio_piece,
-        o.complete_tomography,
-        o.two_jaws_tomography,
-        o.maxilar_tomography,
-        o.jaw_tomography,
-        o.snp_tomography,
-        o.ear_tomography,
-        o.atm_tomography_open_close,
-        o.lateral_left_tomography_open_close,
-        o.lateral_right_tomography_open_close,
-        o.ondemand,
-        o.dicom,
-        o.tomography_piece,
-        o.implant,
-        o.impacted_tooth,
-        o.others_tomography,
-        o.stl,
-        o.obj,
-        o.ply,
-        o.invisaligh,
-        o.others_scanners,
-        o.maxilar_superior,
-        o.maxilar_inferior,
-        o.maxilar_both,
-        o.maxilar_others,
-        o.dental_interpretation,
-        o.status,
-        o.method,
-        o.active AS order_active,
-        o.created_at AS order_created_at,
-        o.updated_at AS order_updated_at
-
-            FROM appointments a
-            JOIN orders o ON a.id_order = o.id
-            WHERE a.code = '$code'
-            ORDER BY a.created_at DESC
-            LIMIT 1;
-            ");
-            
-        // Validar que se encontraron datos
-        if (empty($data)) {
-            throw new \Exception("No se encontraron datos para generar el documento");
-        }
-        
-        $file = new File();
-        return $file->generatePDF($data, $disposition);
-    } */
 
     public function getDetailsById(String $id)
     {
@@ -460,6 +356,7 @@ class Order extends Entity
         o.acetate_print,
         o.paper_print,
         o.send_email,
+        o.packet,
         o.rx_panoramic,
         o.rx_arc_panoramic,
         o.rx_lateral_skull,
