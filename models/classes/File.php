@@ -1167,4 +1167,303 @@ class File
         readfile($filePath);
         exit;
     }
+
+    public static function generatePaymentTicketPDF(array $dataTicket, string $disposition = 'inline')
+    {
+        // Validar que el array no esté vacío
+        if (empty($dataTicket) || !isset($dataTicket[0])) {
+            throw new \Exception("No se encontraron datos para generar el comprobante de pago");
+        }
+
+        $info = $dataTicket[0];
+
+        // Validar que $info sea un array
+        if (!is_array($info)) {
+            throw new \Exception("Los datos proporcionados para el comprobante no tienen el formato correcto");
+        }
+        
+        $options = new Options();
+        $options->set('defaultFont', 'Helvetica');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+
+        // Cargar logo de la empresa
+        $logoPath = 'assets/images/logo_ceraor.png';
+        $logoType = pathinfo($logoPath, PATHINFO_EXTENSION);
+        $logoData = file_get_contents($logoPath);
+        $logoBase64 = 'data:image/' . $logoType . ';base64,' . base64_encode($logoData);
+
+        // Extraer información del pago
+        $paymentId = $info['id_pago'] ?? 'N/A';
+        $paymentMethod = $info['metodo_pago'] ?? 'N/A';
+        $amount = $info['cantidad'] ?? '0';
+        $status = $info['estado'] ?? 'N/A';
+        $paymentDate = isset($info['fecha_hora_pago']) ? date('d/m/Y H:i', strtotime($info['fecha_hora_pago'])) : 'N/A';
+        $updateDate = isset($info['fecha_actualizacion']) ? date('d/m/Y H:i', strtotime($info['fecha_actualizacion'])) : 'N/A';
+        $patientName = $info['nombre_paciente'] ?? 'N/A';
+        $serviceName = $info['nombre_servicio'] ?? 'N/A';
+        $subsidiary = $info['sucursal'] ?? 'N/A';
+        $appointmentDate = isset($info['fecha_cita']) ? date('d/m/Y H:i', strtotime($info['fecha_cita'])) : 'N/A';
+        $appointmentEnd = isset($info['fin_cita']) ? date('d/m/Y H:i', strtotime($info['fin_cita'])) : 'N/A';
+        $appointmentCode = $info['codigo_cita'] ?? 'N/A';
+        $barcode = $info['codigo_barras'] ?? null;
+
+        // Formatear cantidad como moneda
+        $formattedAmount = '$' . number_format((float)$amount, 2);
+
+        // Generar código único para el comprobante
+        $receiptCode = 'COMP-' . strtoupper(substr($paymentId, 0, 8));
+
+        // HTML para el comprobante de pago
+        $html = "
+        <!DOCTYPE html>
+        <html lang='es'>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Comprobante de Pago {$receiptCode}</title>
+            <style>
+                @page {
+                    size: A4 portrait;
+                    margin: 15mm;
+                }
+
+                body { 
+                    margin: 0; 
+                    padding: 0; 
+                    font-family: Arial, sans-serif; 
+                    font-size: 12px;
+                    line-height: 1.4;
+                    color: #000;
+                }
+                
+                .receipt {
+                    width: 100%;
+                    max-width: 100%;
+                    margin: 0 auto;
+                    border: 2px solid #000;
+                    padding: 20px;
+                    box-sizing: border-box;
+                }
+                
+                .header {
+                    text-align: center;
+                    margin-bottom: 25px;
+                    padding-bottom: 15px;
+                    border-bottom: 2px solid #000;
+                }
+                
+                .logo {
+                    max-width: 120px;
+                    height: auto;
+                    margin-bottom: 10px;
+                }
+                
+                .company-name {
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #000;
+                    margin-bottom: 5px;
+                }
+                
+                .document-title {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #000;
+                    margin: 10px 0;
+                }
+                
+                .receipt-code {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #000;
+                    background-color: #f0f0f0;
+                    padding: 8px 15px;
+                    border: 1px solid #000;
+                    border-radius: 5px;
+                    margin-top: 10px;
+                    display: inline-block;
+                }
+                
+                .info-section {
+                    margin-bottom: 20px;
+                }
+                
+                .section-title {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #000;
+                    background-color: #e0f7fa;
+                    padding: 8px 12px;
+                    margin-bottom: 10px;
+                    border: 1px solid #ddd;
+                }
+                
+                .info-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 15px;
+                }
+                
+                .info-table td {
+                    padding: 8px 12px;
+                    border: 1px solid #ddd;
+                    vertical-align: top;
+                }
+                
+                .info-table .label {
+                    font-weight: bold;
+                    background-color: #f9f9f9;
+                    width: 35%;
+                }
+                
+                .info-table .value {
+                    background-color: #fff;
+                }
+                
+                .amount-section {
+                    background-color: #f0f8ff;
+                    border: 2px solid #000;
+                    padding: 15px;
+                    text-align: center;
+                    margin: 20px 0;
+                }
+                
+                .amount-label {
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                }
+                
+                .amount-value {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #2e7d32;
+                }
+                
+                .footer {
+                    margin-top: 30px;
+                    text-align: center;
+                    font-size: 10px;
+                    color: #666;
+                    border-top: 1px solid #ddd;
+                    padding-top: 15px;
+                }
+                
+                .status-paid {
+                    color: #2e7d32;
+                    font-weight: bold;
+                }
+                
+                .status-pending {
+                    color: #f57c00;
+                    font-weight: bold;
+                }
+                
+                .status-cancelled {
+                    color: #d32f2f;
+                    font-weight: bold;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='receipt'>
+                <div class='header'>
+                    <img src='{$logoBase64}' class='logo'>
+                    <div class='document-title'>COMPROBANTE DE PAGO</div>
+                    <div class='receipt-code'>{$receiptCode}</div>
+                </div>
+                
+                <div class='info-section'>
+                    <div class='section-title'>INFORMACIÓN DEL PAGO</div>
+                    <table class='info-table'>
+                        <tr>
+                            <td class='label'>ID de Pago:</td>
+                            <td class='value'>{$paymentId}</td>
+                        </tr>
+                        <tr>
+                            <td class='label'>Fecha de Pago:</td>
+                            <td class='value'>{$paymentDate}</td>
+                        </tr>
+                        <tr>
+                            <td class='label'>Método de Pago:</td>
+                            <td class='value'>{$paymentMethod}</td>
+                        </tr>
+                        <tr>
+                            <td class='label'>Estado:</td>
+                            <td class='value status-paid'>{$status}</td>
+                        </tr>
+                        <tr>
+                            <td class='label'>Sucursal:</td>
+                            <td class='value'>{$subsidiary}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class='info-section'>
+                    <div class='section-title'>INFORMACIÓN DEL PACIENTE Y SERVICIO</div>
+                    <table class='info-table'>
+                        <tr>
+                            <td class='label'>Paciente:</td>
+                            <td class='value'>{$patientName}</td>
+                        </tr>
+                        <tr>
+                            <td class='label'>Servicio:</td>
+                            <td class='value'>{$serviceName}</td>
+                        </tr>
+                        <tr>
+                            <td class='label'>Código de Cita:</td>
+                            <td class='value'>{$appointmentCode}</td>
+                        </tr>
+                        <tr>
+                            <td class='label'>Fecha de Cita:</td>
+                            <td class='value'>{$appointmentDate}</td>
+                        </tr>
+                        <tr>
+                            <td class='label'>Hora de Finalización:</td>
+                            <td class='value'>{$appointmentEnd}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class='amount-section'>
+                    <div class='amount-label'>MONTO PAGADO</div>
+                    <div class='amount-value'>{$formattedAmount}</div>
+                </div>
+                
+                <div class='footer'>
+                    <p>Comprobante generado el " . date('d/m/Y H:i') . "</p>
+                    <p>Este documento es válido como comprobante de pago</p>
+                    <p>Para cualquier aclaración, conserve este comprobante</p>
+                </div>
+            </div>
+        </body>
+        </html>";
+
+        // Configurar y generar PDF
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        $pdfOutput = $dompdf->output();
+
+        // Nombre del archivo
+        $cleanCode = preg_replace('/[^A-Za-z0-9_\-]/', '_', $receiptCode);
+
+        // Crear carpeta si no existe
+        $paymentsDir = 'docs/payments';
+        if (!is_dir($paymentsDir)) {
+            mkdir($paymentsDir, 0755, true);
+        }
+
+        $filePath = $paymentsDir . '/comprobante_' . $cleanCode . '.pdf';
+
+        // Guardar archivo
+        file_put_contents($filePath, $pdfOutput);
+
+        // Enviar al navegador
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: ' . $disposition . '; filename="comprobante_' . $cleanCode . '.pdf"');
+        echo $pdfOutput;
+        exit;
+    }
 }
