@@ -8,7 +8,7 @@ class Payment extends Entity
 {
 
     public function getAllPayments(){
-        $sql = "SELECT COALESCE(o.patient, a.client) AS nombre_paciente,
+        $sql = "SELECT COALESCE(o.patient, a.client) AS nombre_paciente,  p.id AS id_pago,
                 COALESCE(s.name, a.service) AS nombre_servicio, sub.name AS sucursal,
                 p.created_at AS fecha_hora_pago, p.amount AS cantidad FROM payments
                 p LEFT JOIN appointments a ON p.id_appointment = a.id LEFT JOIN orders o ON a.id_order = o.id 

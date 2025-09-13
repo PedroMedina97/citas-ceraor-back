@@ -1241,7 +1241,7 @@ class File
                     width: 100%;
                     max-width: 100%;
                     margin: 0 auto;
-                    border: 2px solid #000;
+                    
                     padding: 20px;
                     box-sizing: border-box;
                 }
@@ -1342,12 +1342,12 @@ class File
                 }
                 
                 .footer {
-                    margin-top: 30px;
+                    margin-top: 5px;
                     text-align: center;
-                    font-size: 10px;
+                    font-size: 6px;
                     color: #666;
                     border-top: 1px solid #ddd;
-                    padding-top: 15px;
+                    padding-top: 5px;
                 }
                 
                 .status-paid {
