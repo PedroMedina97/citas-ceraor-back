@@ -236,6 +236,33 @@ switch ($method) {
                 echo json_encode($response);
             break;
 
+            case 'resetpassword':
+                $id = $router->getParam();
+                if (in_array('update_user', $permissionsArray)) {
+                    $data = $instance->resetPasswordToBirthdate($id);
+                    if ($data) {
+                        HTTPStatus::setStatus(200);
+                        $response = [
+                            "status" => "success",
+                            "msg" => "Contraseña restablecida exitosamente"
+                        ];
+                    } else {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => "error",
+                            "msg" => "No se pudo restablecer la contraseña"
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => "No autorizado"
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
             default:
                 echo "Método no definido para esta clase";
             break;

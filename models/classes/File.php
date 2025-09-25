@@ -147,94 +147,7 @@ class File
 
             <body>
 
-                <table style='width: 100% !important; table-layout: fixed !important;'>
-                    <thead>
-                        <th style='font-size: 11px'>Villahermosa</th>
-                        <th style='font-size: 11px'>Cárdenas</th>
-                        <th style='font-size: 11px'>Comalcalco</th>
-                        <th style='font-size: 11px'>Tuxtla Gutiérrez</th>
-                        <th style='font-size: 11px'>Veracruz, Ver.</th>
-                    </thead>
-
-                    <tr>
-                        <td
-                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
-                            <table>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Dirección:</b> Blvd. Adolfo Ruiz Cortines No.804 Magisterial,
-                                        Vhsa., Tab. C.P. 86040</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Teléfono(s):</b> 993-324-6453, 993-314-4353, 993-151-9846,
-                                        993-151-9847</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>WhatsApp:</b> 993-264-3105</td>
-                                </tr>
-                            </table>
-                        </td>
-                        <td
-                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
-                            <table>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Dirección:</b> Av. Lázaro Cárdenas No. 1000 Local 20 Plaza Aqua,
-                                        Col. Centro, Cárdenas, Tabasco. C.P.86500</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Teléfono(s):</b> 937-668-5556, 937-668-5624</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>WhatsApp:</b> 937-108-2076</td>
-                                </tr>
-                            </table>
-                        </td>
-                        <td
-                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
-                            <table>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Dirección: </b>Calle Bicentenario Manzana 1 Lote 8, Fracc. Santo
-                                        Domingo, (frente al ADO) Comalcalco, Tab. C.P. 86340</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Teléfono(s): </b> 933-109-4400</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>WhatsApp: </b>933-129-6910</td>
-                                </tr>
-                            </table>
-                        </td>
-                        <td
-                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
-                            <table>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Dirección: </b>Calle San Francisco El Sabinal 228 Planta Baja,
-                                        Col. San Francisco Sabinal, Tuxtla Gutiérrez, Chiapas. C.P. 29020</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Teléfono(s): </b>961-125-9687</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>WhatsApp: </b> 961-367-9746</td>
-                                </tr>
-                            </table>
-                        </td>
-                        <td
-                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
-                            <table>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Dirección: </b>Calle España No.23, Fracc. Reforma, 91919,
-                                        Veracruz, Ver.</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>Teléfono(s): </b>229-935-9472, 229-489-1442</td>
-                                </tr>
-                                <tr>
-                                    <td style='font-size: 10px'><b>WhatsApp: </b> 229-117-9108</td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
+                
                 <table style='width: 100%;'>
                     <tr>
                         <td style='width: 50%; text-align: left;'>
@@ -255,7 +168,8 @@ class File
                 </center>
                 <table style='width: 100% !important; table-layout: fixed !important; border-spacing: 10px !important;'>
                     <thead>
-                        <th style='font-size: 12px'>Folio: " . $info['code'] . "</th>
+                        <th style='font-size: 12px'>Folio Cita: " . $info['code'] . " Código Orden: " . $info['folio_order']."</th>
+
                     </thead>
                     <tr>
                         <td
@@ -677,6 +591,94 @@ class File
                         <label style='font-size: 11px !important;'>Firma</label>
                         <div>
                             <center>
+            <table style='width: 100% !important; table-layout: fixed !important;'>
+                    <thead>
+                        <th style='font-size: 11px'>Villahermosa</th>
+                        <th style='font-size: 11px'>Cárdenas</th>
+                        <th style='font-size: 11px'>Comalcalco</th>
+                        <th style='font-size: 11px'>Tuxtla Gutiérrez</th>
+                        <th style='font-size: 11px'>Veracruz, Ver.</th>
+                    </thead>
+
+                    <tr>
+                        <td
+                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
+                            <table>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Dirección:</b> Blvd. Adolfo Ruiz Cortines No.804 Magisterial,
+                                        Vhsa., Tab. C.P. 86040</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Teléfono(s):</b> 993-324-6453, 993-314-4353, 993-151-9846,
+                                        993-151-9847</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>WhatsApp:</b> 993-264-3105</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td
+                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
+                            <table>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Dirección:</b> Av. Lázaro Cárdenas No. 1000 Local 20 Plaza Aqua,
+                                        Col. Centro, Cárdenas, Tabasco. C.P.86500</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Teléfono(s):</b> 937-668-5556, 937-668-5624</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>WhatsApp:</b> 937-108-2076</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td
+                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
+                            <table>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Dirección: </b>Calle Bicentenario Manzana 1 Lote 8, Fracc. Santo
+                                        Domingo, (frente al ADO) Comalcalco, Tab. C.P. 86340</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Teléfono(s): </b> 933-109-4400</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>WhatsApp: </b>933-129-6910</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td
+                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
+                            <table>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Dirección: </b>Calle San Francisco El Sabinal 228 Planta Baja,
+                                        Col. San Francisco Sabinal, Tuxtla Gutiérrez, Chiapas. C.P. 29020</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Teléfono(s): </b>961-125-9687</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>WhatsApp: </b> 961-367-9746</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td
+                            style='background-color: #f2f2f2 !important; border-radius: 1px !important; vertical-align: top !important;'>
+                            <table>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Dirección: </b>Calle España No.23, Fracc. Reforma, 91919,
+                                        Veracruz, Ver.</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>Teléfono(s): </b>229-935-9472, 229-489-1442</td>
+                                </tr>
+                                <tr>
+                                    <td style='font-size: 10px'><b>WhatsApp: </b> 229-117-9108</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </body>
 
             </html>

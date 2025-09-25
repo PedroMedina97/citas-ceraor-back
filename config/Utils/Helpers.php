@@ -223,10 +223,30 @@ class Helpers
         return $db;
     }
 
-    public static function myQuery($query){
-        /* echo $query;
-        die(); */
+    /* public static function myQuery($query){
         $sql = Helpers::connect()->query($query);
         return $sql->fetch_all(MYSQLI_ASSOC);
+    } */
+   
+    public static function myQuery($query) {
+        $conn = Helpers::connect();
+        $res = $conn->query($query);
+    
+        if ($res === false) {
+            // Lanza excepción con el error de MySQLi
+            throw new \Exception("MySQLi error: " . $conn->error);
+        }
+    
+        // Para INSERT/UPDATE/DELETE -> true
+        if ($res === true) {
+            // puedes regresar filas afectadas o true
+            return ['affected_rows' => $conn->affected_rows];
+        }
+    
+        // Para SELECT -> mysqli_result
+        $rows = $res->fetch_all(MYSQLI_ASSOC);
+        $res->free();
+        return $rows; // [] si no hay filas
     }
+    
 }

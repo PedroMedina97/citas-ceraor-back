@@ -30,6 +30,16 @@ class Order extends Entity
     
         return Helpers::myQuery($sql);
     }
+
+    function generateShortUuid($uuid) {
+        // Generar un hash único basado en el UUID
+        $hash = md5($uuid . uniqid(mt_rand(), true));
+    
+        // Convertir los primeros 8 caracteres del hash en una cadena alfanumérica
+        $shortUuid = substr(base_convert(substr($hash, 0, 16), 16, 36), 0, 8);
+    
+        return strtoupper($shortUuid); // Opcional: Convertir a mayúsculas para mejor legibilidad
+    }
     
 
     public function createOrder(String $name_table, array $body)
@@ -39,6 +49,7 @@ class Order extends Entity
         $file->generatePDF($body);
         die(); */
         $id = $key->generate_uuid();
+        $folio_order = $this->generateShortUuid($id);
         $patient = $body["patient"];
         $birthdate = $body["birthdate"];
         $phone = $body["phone"];
@@ -114,7 +125,7 @@ class Order extends Entity
         $method = isset($body["method"]) ? $body["method"] : 'por_definir';
 
         $query = "INSERT INTO $name_table (
-                    id, patient, birthdate, phone, doctor, address, professional_id, email, 
+                    id, folio_order, patient, birthdate, phone, doctor, address, professional_id, email, 
                     acetate_print, paper_print, send_email, packet, rx_panoramic, rx_arc_panoramic, 
                     rx_lateral_skull, ap_skull, pa_skull, paranasal_sinuses, atm_open_close, 
                     profilogram, watters_skull, palmar_digit, others_radiography, occlusal_xray, 
@@ -129,7 +140,7 @@ class Order extends Entity
                     invisaligh, others_scanners, maxilar_superior, maxilar_inferior, maxilar_both, maxilar_others, dental_interpretation,
                     status, method, active, created_at, updated_at
                 ) VALUES (
-                    '$id', '$patient', '$birthdate', '$phone', '$doctor', '$address', 
+                    '$id', '$folio_order', '$patient', '$birthdate', '$phone', '$doctor', '$address', 
                     '$professional_id', '$email', $acetate_print, $paper_print, $send_email, 
                     $packet, $rx_panoramic, $rx_arc_panoramic, $rx_lateral_skull, $ap_skull, $pa_skull, 
                     $paranasal_sinuses, $atm_open_close, $profilogram, $watters_skull, 
@@ -185,6 +196,7 @@ class Order extends Entity
         a.updated_at AS appointment_updated_at,
 
         o.id AS order_id,
+        o.folio_order,
         o.patient,
         o.birthdate,
         o.phone,
@@ -346,6 +358,7 @@ class Order extends Entity
         COALESCE(a.updated_at, o.updated_at) AS appointment_updated_at,
 
         o.id AS order_id,
+        o.folio_order,
         o.patient,
         o.birthdate,
         o.phone,
