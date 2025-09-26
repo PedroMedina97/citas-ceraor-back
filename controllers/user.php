@@ -182,7 +182,7 @@ switch ($method) {
                     $related = $body['related'];
                     $address = $body['address'];
                     $id_rol = $body['id_rol'];
-                    $data = $instance->insertUser($parentId, $name, $lastname, $email, $password, $birthday, $phone, $related, $address, $id_rol);
+                    $data = $instance->insertUser($parentId, $name, $lastname, $email, $password, $birthday, $phone, $address, $id_rol, $related);
 
                     if ($data) {
                         HTTPStatus::setStatus(201);

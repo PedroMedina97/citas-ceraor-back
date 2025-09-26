@@ -19,44 +19,61 @@ class User extends Entity
         $this->auth = new Auth();
     }
 
-    public function insertUser(String $parentId, String $name, String $lastname, String $email, String $pass, String $birthday, String $phone, String $address, $idRol, String $related = '')
-    {
-        global $db;
-        $parentId = mysqli_real_escape_string(Helpers::connect(), $parentId);
-        $name = mysqli_real_escape_string(Helpers::connect(), $name);
-        $lastname = mysqli_real_escape_string(Helpers::connect(), $lastname);
-        $email = mysqli_real_escape_string(Helpers::connect(), $email);
-        $birthday = mysqli_real_escape_string(Helpers::connect(), $birthday);
-        $pass = password_hash(($pass), PASSWORD_BCRYPT, ['cost' => 4]);
-        $phone = mysqli_real_escape_string(Helpers::connect(), $phone);
-        $related = mysqli_real_escape_string(Helpers::connect(), $related);
-        $address = mysqli_real_escape_string(Helpers::connect(), $address);
-
+    public function insertUser(
+        string $parentId,
+        string $name,
+        string $lastname,
+        string $email,
+        string $pass,
+        string $birthday,
+        string $phone,
+        string $address,
+        $idRol,
+        string $related = ''
+    ) {
+        $db = Helpers::connect();
+        // Escapar usando la MISMA conexión ($db)
+        $parentId = mysqli_real_escape_string($db, $parentId);
+        $name     = mysqli_real_escape_string($db, $name);
+        $lastname = mysqli_real_escape_string($db, $lastname);
+        $email    = mysqli_real_escape_string($db, $email);
+        $birthday = mysqli_real_escape_string($db, $birthday);
+        $phone    = mysqli_real_escape_string($db, $phone);
+        $related  = mysqli_real_escape_string($db, $related);
+        $address  = mysqli_real_escape_string($db, $address);
+    
+        // Hash de contraseña
+        $pass = password_hash($pass, PASSWORD_BCRYPT, ['cost' => 4]);
+    
         try {
-            // Check if email already exists
-            $exists_email = $db->query("SELECT * FROM users WHERE email = '$email'");
-            /*  var_dump($exists_email);
-            die(); */
-            if ($exists_email->num_rows > 0) {
-                return false; // Email already exists
-            } else {
-                // Insert user data into database
-                $key = new Key();
-                $id = $key->generate_uuid();
-                $query = "INSERT INTO users (id, parent_id, name, lastname, email, password, birthday, phone, address, id_rol, related, active, created_at, updated_at) VALUES ('$id', '$parentId','$name', '$lastname', '$email', '$pass', '$birthday', '$phone', '$address', $idRol, '$related', 1, NOW(), NOW())";
-                $sql = $db->query($query);
-                if (!$sql) {
-                    throw new \Exception(mysqli_error($db));
-                }
-                return $sql; // Return the query result
+            // Verificar si el email ya existe
+            $exists_email = $db->query("SELECT 1 FROM users WHERE email = '$email' LIMIT 1");
+            if ($exists_email && $exists_email->num_rows > 0) {
+                return false; // Email ya existe
             }
+    
+            // Generar UUID
+            $key = new Key();
+            $id  = $key->generate_uuid();
+    
+            // Normalizar idRol
+            $idRol = ($idRol === '' || $idRol === null) ? "NULL" : (int)$idRol;
+    
+            // Query final
+            $query = "INSERT INTO users (id, parent_id, name, lastname, email, password, birthday, phone, related, address, id_rol, image, professional_id, first_login, active, created_at, updated_at) VALUES ('$id', '$parentId', '$name', '$lastname', '$email', '$pass', '$birthday', '$phone', '$related', '$address', $idRol, NULL, NULL, 1, 1, NOW(), NOW())";
+            /* echo($query);
+            die(); */
+            $sql = $db->query($query);
+            if (!$sql) {
+                throw new \Exception(mysqli_error($db));
+            }
+            return $sql; // Return true/false
         } catch (\Exception $e) {
-            // Handle the exception (e.g., log it, display an error message)
-            $error = error_log("Error inserting user: " . $e->getMessage());
-
-            return $error;
+            error_log("Error inserting user: " . $e->getMessage());
+            return false;
         }
     }
+    
 
     public function getUsersByRol($id_rol)
     {
