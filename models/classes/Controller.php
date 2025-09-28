@@ -74,12 +74,6 @@ class Controller
     {
         $router = new Router();
         $parameter = $router->getParam();
-        /* if (isset($content['image']) && isset($content['image']['tmp_name'])) {
-            $file = new File();
-            $base64_image = $file->read($content['image']['tmp_name'], $content['image']['type']);
-            $content['image'] = $base64_image;
-        } */
-
         $data = $parameter ? $nameClass->update($name_table, $content, $parameter) : null;
         return $data;
     }

@@ -219,7 +219,7 @@ switch ($method) {
             case 'updateuser':
                 $id = $router->getParam();
                 if (in_array('update_user', $permissionsArray)) {
-                    $data = $controller->update($instance, $name_table, $body);
+                    $data = $instance->updateUser($id, $body);
                     HTTPStatus::setStatus(200);
                     $response = [
                         "status" => "success",
@@ -235,6 +235,27 @@ switch ($method) {
                 }
                 echo json_encode($response);
             break;
+
+            case 'updatedata':
+                $id = $router->getParam();
+                if (in_array('update_user', $permissionsArray)) {
+                    $data = $controller->update($instance, $name_table, $body);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => $data ? HTTPStatus::getMessage(200) : HTTPStatus::getMessage(400),
+                        "data" => $data
+                    ];
+                }
+                else{
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
 
             case 'resetpassword':
                 $id = $router->getParam();

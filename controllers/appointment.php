@@ -105,14 +105,14 @@ switch ($method) {
 
             case 'getbysubsidiary':
                 /* if (in_array('get_appointment', $permissionsArray)) { */
-                    $id = $router->getParam();
-                    $data = $instance->getBySubsidiary($id);
-                    HTTPStatus::setStatus(200);
-                    $response = [
-                        "status" => "success",
-                        "msg" => HTTPStatus::getMessage(200),
-                        "data" => $data
-                    ];
+                $id = $router->getParam();
+                $data = $instance->getBySubsidiary($id);
+                HTTPStatus::setStatus(200);
+                $response = [
+                    "status" => "success",
+                    "msg" => HTTPStatus::getMessage(200),
+                    "data" => $data
+                ];
                 /* } else {
                     HTTPStatus::setStatus(401);
                     $response = [
@@ -121,7 +121,7 @@ switch ($method) {
                     ];
                 } */
                 echo json_encode($response);
-            break;
+                break;
             case 'getdetailbyid':
                 if (in_array('get_appointment', $permissionsArray)) {
                     $id = $router->getParam();
@@ -142,6 +142,35 @@ switch ($method) {
                 echo json_encode($response);
                 break;
 
+            case 'getavaliables':
+                if (in_array('get_appointment', $permissionsArray)) {
+                    $id_subsidiary = $router->getParam();
+                    $date = $router->getExtra();
+                    
+                    if (empty($id_subsidiary) || empty($date)) {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => "error",
+                            "msg" => "Se requieren los parámetros id_subsidiary y date"
+                        ];
+                    } else {
+                        $data = $instance->getAvaliables($id_subsidiary, $date);
+                        HTTPStatus::setStatus(200);
+                        $response = [
+                            "status" => "success",
+                            "msg" => HTTPStatus::getMessage(200),
+                            "data" => $data
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+                break;
 
             default:
                 HTTPStatus::setStatus(404);
@@ -168,7 +197,7 @@ switch ($method) {
                     $appointment = $body['appointment'];
                     $color = $body['color'];
                     $end_appointment = $body['end_appointment']; // asegúrate de capturarlo también
-                    $data = $instance->setAppointment($id_order, $client, $personal, $id_subsidiary, $service, $appointment, $end_appointment, $color);
+                    $data = $instance->setAppointment($client, $personal, $id_subsidiary, $service, $appointment, $end_appointment, $color, $id_order);
                     if ($data) {
                         HTTPStatus::setStatus(201);
                         $response = [
@@ -210,7 +239,7 @@ switch ($method) {
                     ];
                 }
                 echo json_encode($response);
-                break;
+            break;
             default:
                 echo "Método no definido para esta clase";
                 break;

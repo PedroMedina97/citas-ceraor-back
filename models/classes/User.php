@@ -41,24 +41,24 @@ class User extends Entity
         $phone    = mysqli_real_escape_string($db, $phone);
         $related  = mysqli_real_escape_string($db, $related);
         $address  = mysqli_real_escape_string($db, $address);
-    
+
         // Hash de contraseña
         $pass = password_hash($pass, PASSWORD_BCRYPT, ['cost' => 4]);
-    
+
         try {
             // Verificar si el email ya existe
             $exists_email = $db->query("SELECT 1 FROM users WHERE email = '$email' LIMIT 1");
             if ($exists_email && $exists_email->num_rows > 0) {
                 return false; // Email ya existe
             }
-    
+
             // Generar UUID
             $key = new Key();
             $id  = $key->generate_uuid();
-    
+
             // Normalizar idRol
             $idRol = ($idRol === '' || $idRol === null) ? "NULL" : (int)$idRol;
-    
+
             // Query final
             $query = "INSERT INTO users (id, parent_id, name, lastname, email, password, birthday, phone, related, address, id_rol, image, professional_id, first_login, active, created_at, updated_at) VALUES ('$id', '$parentId', '$name', '$lastname', '$email', '$pass', '$birthday', '$phone', '$related', '$address', $idRol, NULL, NULL, 1, 1, NOW(), NOW())";
             /* echo($query);
@@ -73,7 +73,7 @@ class User extends Entity
             return false;
         }
     }
-    
+
 
     public function getUsersByRol($id_rol)
     {
@@ -185,6 +185,37 @@ class User extends Entity
 
             return $error;
         }
+    }
+
+    public function updateUser(string $id, $body)
+    {
+        $db = Helpers::connect();
+        $name = mysqli_real_escape_string($db, $body['name']);
+        $lastname = mysqli_real_escape_string($db, $body['lastname']);
+        $email = mysqli_real_escape_string($db, $body['email']);
+        $pass = password_hash(($body['password']), PASSWORD_BCRYPT, ['cost' => 4]);
+        $birthday = mysqli_real_escape_string($db, $body['birthday']);
+        $phone = mysqli_real_escape_string($db, $body['phone']);
+        $address = mysqli_real_escape_string($db, $body['address']);
+        $id_rol = mysqli_real_escape_string($db, $body['id_rol']);
+        $query = "UPDATE users SET name = '$name', lastname = '$lastname', email = '$email', password = '$pass', birthday = '$birthday', phone = '$phone', address = '$address', id_rol = '$id_rol', updated_at = NOW() WHERE id = '$id'";
+        /* echo($query);
+        die(); */
+        try {
+            $sql = $db->query($query);
+            if (!$sql) {
+                throw new \Exception(mysqli_error($db));
+            }
+            return $sql; // Return the query result
+        } catch (\Exception $e) {
+            // Handle the exception (e.g., log it, display an error message)
+            $error = error_log("Error inserting user: " . $e->getMessage());
+
+            return $error;
+        }
+
+        $sql = $db->query($query);
+        return $sql;
     }
 
     private function getUserByEmail(string $email)
