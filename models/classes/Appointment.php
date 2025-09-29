@@ -98,10 +98,10 @@ class Appointment extends Entity
                 SELECT
                     CAST(15 AS SIGNED) AS slot_minutes, -- tamaño de bloque (min)
                     CAST('$id_subsidiary' AS CHAR CHARACTER SET utf8mb4)
-                    COLLATE utf8mb4_0900_ai_ci AS p_subsidiary_id,       -- fix colación
-                    '$date' AS p_date,                                      -- 'YYYY-MM-DD'
-                    '08:00:00' AS p_open,                                   -- jornada inicio
-                    '20:00:00' AS p_close                                   -- jornada fin
+                    AS p_subsidiary_id,
+                    '$date' AS p_date,
+                    '08:00:00' AS p_open,
+                    '20:00:00' AS p_close
                 ),
                 day_bounds AS (
                 SELECT
