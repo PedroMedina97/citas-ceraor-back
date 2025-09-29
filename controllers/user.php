@@ -170,6 +170,54 @@ switch ($method) {
                 echo json_encode($response);
                 break;
 
+            case 'createpatient':
+                if (in_array('create_user', $permissionsArray)) {
+                    $parentId = $decoded->id; // Usamos el ID del usuario autenticado como parent_id
+                    $name = $body['name'];
+                    $lastname = $body['lastname'];
+                    $birthday = $body['birthday'];
+                    $phone = $body['phone'];
+                    $address = $body['address'];
+                    $email = isset($body['email']) ? $body['email'] : null;
+
+                    $data = $instance->createPatient(
+                        $parentId,
+                        $name,
+                        $lastname,
+                        $birthday,
+                        $phone,
+                        $address,
+                        $email
+                    );
+
+                    if (!$data['error']) {
+                        HTTPStatus::setStatus(201);
+                        $response = [
+                            "status" => "success",
+                            "msg" => $data['message'],
+                            "data" => $data['data']
+                        ];
+                    } else {
+                        if ($data['message'] === 'El email ya existe') {
+                            HTTPStatus::setStatus(409); // Conflict
+                        } else {
+                            HTTPStatus::setStatus(400);
+                        }
+                        $response = [
+                            "status" => "error",
+                            "msg" => $data['message']
+                        ];
+                    }
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => "No autorizado"
+                    ];
+                }
+                echo json_encode($response);
+                break;
+
             case 'register':
                 if (in_array('create_user', $permissionsArray)) {
                     $parentId = $body['parentId'];

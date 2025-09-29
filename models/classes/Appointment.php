@@ -141,9 +141,13 @@ class Appointment extends Entity
                 s.slot_end,
                 CASE 
                     WHEN EXISTS (
-                    SELECT 1 FROM appts x
-                    WHERE x.start_time < s.slot_end
-                        AND x.end_time   > s.slot_start
+                        SELECT 1 FROM appts x
+                        WHERE x.start_time < s.slot_end
+                            AND x.end_time > s.slot_start
+                    ) 
+                    OR (
+                        DAYNAME(s.slot_start) = 'Saturday' 
+                        AND TIME(s.slot_start) >= '14:45:00'
                     ) THEN 'occupied'
                     ELSE 'available'
                 END AS status

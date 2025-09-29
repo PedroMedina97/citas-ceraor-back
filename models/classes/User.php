@@ -236,6 +236,78 @@ class User extends Entity
         return $data;
     }
 
+    public function createPatient(
+        string $parentId,
+        string $name,
+        string $lastname,
+        string $birthday,
+        string $phone,
+        string $address,
+        ?string $email = null
+    ) {
+        $db = Helpers::connect();
+        
+        // Sanitizar entradas
+        $parentId = mysqli_real_escape_string($db, $parentId);
+        $name = mysqli_real_escape_string($db, $name);
+        $lastname = mysqli_real_escape_string($db, $lastname);
+        $birthday = mysqli_real_escape_string($db, $birthday);
+        $phone = mysqli_real_escape_string($db, $phone);
+        $address = mysqli_real_escape_string($db, $address);
+        
+        try {
+            // Verificar email si se proporciona
+            if ($email !== null) {
+                $email = mysqli_real_escape_string($db, $email);
+                $exists_email = $db->query("SELECT 1 FROM users WHERE email = '$email' LIMIT 1");
+                if ($exists_email && $exists_email->num_rows > 0) {
+                    return ['error' => true, 'message' => 'El email ya existe'];
+                }
+            }
+
+            // Generar UUID
+            $key = new Key();
+            $id = $key->generate_uuid();
+
+            // Generar contraseña basada en la fecha de nacimiento (formato ddmmyy)
+            $ts = strtotime($birthday);
+            if ($ts === false) {
+                return ['error' => true, 'message' => 'Fecha de nacimiento inválida'];
+            }
+            $password = date('dmy', $ts);
+            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+            // Query final
+            $query = "INSERT INTO users (
+                id, parent_id, name, lastname, email, password, 
+                birthday, phone, address, id_rol, 
+                first_login, active, created_at, updated_at
+            ) VALUES (
+                '$id', '$parentId', '$name', '$lastname', " . 
+                ($email ? "'$email'" : "NULL") . ", '$hashedPassword',
+                '$birthday', '$phone', '$address', 6,
+                1, 1, NOW(), NOW()
+            )";
+
+            $sql = $db->query($query);
+            if (!$sql) {
+                throw new \Exception(mysqli_error($db));
+            }
+
+            return [
+                'error' => false,
+                'message' => 'Usuario creado exitosamente',
+                'data' => [
+                    'id' => $id,
+                    'password' => $password // Retornamos la contraseña generada
+                ]
+            ];
+        } catch (\Exception $e) {
+            error_log("Error creating patient: " . $e->getMessage());
+            return ['error' => true, 'message' => 'Error al crear el usuario'];
+        }
+    }
+
     public function resetPasswordToBirthdate($userId)
     {
         try {
