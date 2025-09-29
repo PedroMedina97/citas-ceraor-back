@@ -85,7 +85,7 @@ class Appointment extends Entity
         return $result;
     }
 
-    public function getAvaliables($id_subsidiary, $date)
+    /*  public function getAvaliables($id_subsidiary, $date)
     {
         // Sanitiza (sigues con mysqli)
         $conn = Helpers::connect();
@@ -154,6 +154,69 @@ class Appointment extends Entity
                 FROM slots s
                 ORDER BY s.slot_start;
                     ";
+
+        try {
+            return Helpers::myQuery($query);
+        } catch (\Exception $e) {
+            return ['error' => true, 'message' => $e->getMessage()];
+        }
+    } */
+    public function getAvaliables($id_subsidiary, $date)
+    {
+        $conn = Helpers::connect();
+        $id_subsidiary = mysqli_real_escape_string($conn, $id_subsidiary);
+        $date = mysqli_real_escape_string($conn, $date);
+
+        // Configura aquí tu jornada y tamaño de slot (min)
+        $open  = '08:00:00';
+        $close = '20:00:00';
+        $slotMinutes = 15;           // 15, 20, 30, 60...
+
+        $query = "
+            SELECT
+            slots.slot_start,
+            slots.slot_end,
+            CASE
+                WHEN EXISTS (
+                SELECT 1
+                FROM appointments a
+                WHERE a.id_subsidiary = CAST('$id_subsidiary' AS CHAR CHARACTER SET utf8mb4)
+                    AND a.appointment < slots.slot_end
+                    AND COALESCE(a.end_appointment, DATE_ADD(a.appointment, INTERVAL 30 MINUTE)) > slots.slot_start
+                )
+                OR (
+                DAYNAME(slots.slot_start) = 'Saturday'
+                AND TIME(slots.slot_start) >= '14:45:00'
+                )
+                THEN 'occupied'
+                ELSE 'available'
+            END AS status
+            FROM (
+            /* Generador de slots sin CTE: construimos N=1000 números (0..999) y usamos los que caen dentro de la jornada */
+            SELECT
+                DATE_ADD(CONCAT('$date',' $open'), INTERVAL (n.n * $slotMinutes) MINUTE) AS slot_start,
+                DATE_ADD(CONCAT('$date',' $open'), INTERVAL ((n.n + 1) * $slotMinutes) MINUTE) AS slot_end
+            FROM (
+                SELECT
+                ones.i
+                + tens.i  * 10
+                + hund.i  * 100 AS n
+                FROM
+                (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+                UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS ones
+                CROSS JOIN
+                (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+                UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS tens
+                CROSS JOIN
+                (SELECT 0 i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+                UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS hund
+            ) AS n
+            ) AS slots
+            WHERE
+            slots.slot_start >= CONCAT('$date',' $open')
+            AND slots.slot_end   <= CONCAT('$date',' $close')
+            ORDER BY slots.slot_start;
+                ";
 
         try {
             return Helpers::myQuery($query);
