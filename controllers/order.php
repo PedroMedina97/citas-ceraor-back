@@ -28,7 +28,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $path = isset($router) ? $router->getMethod() : null;
 
 // Verificar si la ruta es diferente de "login"
-if ($path !== 'login' && $path !== 'generatedocument' && $path !== 'generatedocumentbycode' && $path !== 'generatedocumentbyorderid') {
+if ($path !== 'login' && $path !== 'generatedocument' && $path !== 'generatedocumentbycode' && $path !== 'generatedocumentbyorderid' && $path !== 'generateticket' && $path !== 'getformorder') {
     // Si el token no existe o no es válido, regresar "401 No autorizado"
     if (is_null($token) || is_null($decoded)) {
         HTTPStatus::setStatus(401);
@@ -76,7 +76,7 @@ switch ($method) {
                 break;
 
             case 'getbyid':
-                if (in_array('get_order', $permissionsArray)) {
+                
                     $id = $router->getParam();
                     $data = $instance->getById($name_table, $id);
                     HTTPStatus::setStatus(200);
@@ -85,13 +85,6 @@ switch ($method) {
                         "msg" => HTTPStatus::getMessage(200),
                         "data" => $data
                     ];
-                } else {
-                    HTTPStatus::setStatus(401);
-                    $response = [
-                        "status" => false,
-                        "msg" => HTTPStatus::getMessage(401)
-                    ];
-                }
                 echo json_encode($response);
                 break;
             case 'getticket':
@@ -366,6 +359,18 @@ switch ($method) {
                 echo json_encode($response);
                 break;
 
+            case 'getformorder':
+                    $id = $router->getParam();
+                    $data = $instance->getFormOrder($id);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                echo json_encode($response);
+                break;
+
             default:
                 HTTPStatus::setStatus(404);
                 $response = [
@@ -382,7 +387,7 @@ switch ($method) {
             case 'create':
                 if (in_array('create_order', $permissionsArray)) {
                     HTTPStatus::setStatus(201);
-                    $data = $instance->createOrder($name_table, $body);
+                    $data = $instance->create($name_table, $body);
                     $response = [
                         "status" => "success",
                         "msg" => HTTPStatus::getMessage(201),

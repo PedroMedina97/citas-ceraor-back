@@ -14,6 +14,7 @@ class Helpers
     public static function insert(string $name_table, $atributes)
     {
         global $db;
+        $lastId = null;
         foreach ($atributes as $row => $value) {
             $items = [];
             foreach ($value as $item) {
@@ -31,14 +32,19 @@ class Helpers
             $data = implode(", ", $items);
             $key = new Key();
             $id = $key->generate_uuid();
+            $lastId = $id; // Guardar el último ID generado
             /* var_dump($id);
             die(); */
             $query = "INSERT INTO $name_table VALUES ('$id', $data, 1, NOW(), NOW())";
-              /* echo($query);
+            /* echo($query);
             die(); */
             $sql = $db->query($query);
         }
-        return $sql;
+        // Retornar el resultado con el UUID del registro creado
+        return [
+            'success' => $sql,
+            'id' => $lastId
+        ];
     }
 
     public static function update(string $name_table, $atributes, String $id)
@@ -155,24 +161,6 @@ class Helpers
     }
 
 
-    /* public static function getByIdParent(string $name_table, string $column, string $id_related)
-        {
-            global $db;
-            try {
-                $query = "SELECT * FROM $name_table WHERE $column= $id_related and active= 1";
-                $sql = $db->query($query);
-                $sql = $sql->fetch_all(MYSQLI_ASSOC);
-                if ($sql->num_rows > 0){
-                    return $sql;  
-                }else{
-                    return false;
-                }
-            } catch (Exception $e) {
-                echo 'Error: ',  $e->getMessage(), "\n";
-            }
-            
-        } */
-
     public static function search(string $name_table, array $cols, string $query)
     {
         global $db;
@@ -221,11 +209,6 @@ class Helpers
         global $db;
         return $db;
     }
-
-    /* public static function myQuery($query){
-        $sql = Helpers::connect()->query($query);
-        return $sql->fetch_all(MYSQLI_ASSOC);
-    } */
    
     public static function myQuery($query) {
         $conn = Helpers::connect();

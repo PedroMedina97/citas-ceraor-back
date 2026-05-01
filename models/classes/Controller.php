@@ -59,12 +59,6 @@ class Controller
 
     public function post(object $nameClass, $name_table, $content)
     {
-        /* if (array_key_exists('image', $content[0])) {
-            $file = new File();
-            $fl = $file->read($content[0]['image']);
-            $content[0]['image'] = "http://localhost/api-clinix/". $fl;
-        } */
-
         $data = $nameClass->create($name_table, $content);
         return $data;
     }

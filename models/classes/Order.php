@@ -40,132 +40,84 @@ class Order extends Entity
     
         return strtoupper($shortUuid); // Opcional: Convertir a mayúsculas para mejor legibilidad
     }
+
+
+   public function getFormOrder(string $id_subsidiary)
+{
+    // Escapar el valor para prevenir SQL injection
+    $conn = Helpers::connect();
+    $id_subsidiary_safe = $conn->real_escape_string($id_subsidiary);
     
+    $sql = "
+        SELECT JSON_OBJECT(
+            
+            'categories', (
+                SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'id', c.id,
+                        'name', c.name,
+                        'inputs', c.inputs,
+                        'services', IFNULL((
+                            SELECT JSON_ARRAYAGG(
+                                JSON_OBJECT(
+                                    'id', s.id,
+                                    'name', s.name,
+                                    'description', s.description,
+                                    'price', ss.price,
+                                    'image', s.image
+                                )
+                            )
+                            FROM services s
+                            INNER JOIN subsidiaries_services ss 
+                                ON ss.id_service = s.id
+                            WHERE s.id_category = c.id
+                              AND s.active = 1
+                              AND ss.id_subsidiary = '$id_subsidiary_safe'
+                        ), JSON_ARRAY())
+                    )
+                )
+                FROM categories c
+                WHERE c.active = 1
+            ),
 
-    public function createOrder(String $name_table, array $body)
-    {
-        $key = new Key();
-        /*  $file = new File();
-        $file->generatePDF($body);
-        die(); */
-        $id = $key->generate_uuid();
-        $folio_order = $this->generateShortUuid($id);
-        $patient = $body["patient"];
-        $birthdate = $body["birthdate"];
-        $phone = $body["phone"];
-        $doctor = $body["doctor"];
-        $address = $body["address"];
-        $professional_id = isset($body["professional_id"]) ? $body["professional_id"] : NULL;
-        $email = isset($body["email"]) ? $body["email"] : NULL;
-        $acetate_print = isset($body["acetate_print"]) ? $body["acetate_print"] : 0;
-        $paper_print = isset($body["paper_print"]) ? $body["paper_print"] : 0;
-        $send_email = isset($body["send_email"]) ? $body["send_email"] : 0;
-        $packet = isset($body["packet"]) ? $body["packet"] : 0;
-        $rx_panoramic = isset($body["rx_panoramic"]) ? $body["rx_panoramic"] : 0;
-        $rx_arc_panoramic = isset($body["rx_arc_panoramic"]) ? $body["rx_arc_panoramic"] : 0;
-        $rx_lateral_skull = isset($body["rx_lateral_skull"]) ? $body["rx_lateral_skull"] : 0;
-        $ap_skull = isset($body["ap_skull"]) ? $body["ap_skull"] : 0;
-        $pa_skull = isset($body["pa_skull"]) ? $body["pa_skull"] : 0;
-        $paranasal_sinuses = isset($body["paranasal_sinuses"]) ? $body["paranasal_sinuses"] : 0;
-        $atm_open_close = isset($body["atm_open_close"]) ? $body["atm_open_close"] : 0;
-        $profilogram = isset($body["profilogram"]) ? $body["profilogram"] : 0;
-        $watters_skull = isset($body["watters_skull"]) ? $body["watters_skull"] : 0;
-        $palmar_digit = isset($body["palmar_digit"]) ? $body["palmar_digit"] : 0;
-        $others_radiography = isset($body["others_radiography"]) ? $body["others_radiography"] : NULL;
-        $occlusal_xray = isset($body["occlusal_xray"]) ? $body["occlusal_xray"] : 0;
-        $superior = isset($body["superior"]) ? $body["superior"] : 0;
-        $inferior = isset($body["inferior"]) ? $body["inferior"] : 0;
-        $complete_periapical = isset($body["complete_periapical"]) ? $body["complete_periapical"] : 0;
-        $individual_periapical = isset($body["individual_periapical"]) ? $body["individual_periapical"] : 0;
-        $conductometry = isset($body["conductometry"]) ? $body["conductometry"] : 0;
-        $clinical_photography = isset($body["clinical_photography"]) ? $body["clinical_photography"] : 0;
-        $rickets = isset($body["rickets"]) ? $body["rickets"] : 0;
-        $mcnamara = isset($body["mcnamara"]) ? $body["mcnamara"] : 0;
-        $downs = isset($body["downs"]) ? $body["downs"] : 0;
-        $jaraback = isset($body["jaraback"]) ? $body["jaraback"] : 0;
-        $steiner = isset($body["steiner"]) ? $body["steiner"] : 0;
-        $others_analysis = isset($body["others_analysis"]) ? $body["others_analysis"] : NULL;
-        $analysis_bolton = isset($body["analysis_bolton"]) ? $body["analysis_bolton"] : NULL;
-        $analysis_moyers = isset($body["analysis_moyers"]) ? $body["analysis_moyers"] : 0;
-        $others_models_analysis = isset($body["others_models_analysis"]) ? $body["others_models_analysis"] : NULL;
-        $risina = isset($body["risina"]) ? $body["risina"] : 0;
-        $dentalprint = isset($body["dentalprint"]) ? $body["dentalprint"] : 0;
-        $three_d_risina = isset($body["risina_3d"]) ? $body["risina_3d"] : 0;
-        $surgical_guide = isset($body["surgical_guide"]) ? $body["surgical_guide"] : 0;
-        $studio_piece = isset($body["studio_piece"]) ? $body["studio_piece"] : 0;
-        $complete_tomography = isset($body["complete_tomography"]) ? $body["complete_tomography"] : 0;
-        $two_jaws_tomography = isset($body["two_jaws_tomography"]) ? $body["two_jaws_tomography"] : 0;
-        $maxilar_tomography = isset($body["maxilar_tomography"]) ? $body["maxilar_tomography"] : 0;
-        $jaw_tomography = isset($body["jaw_tomography"]) ? $body["jaw_tomography"] : 0;
-        $snp_tomography = isset($body["snp_tomography"]) ? $body["snp_tomography"] : 0;
-        $ear_tomography = isset($body["ear_tomography"]) ? $body["ear_tomography"] : 0;
-        $atm_tomography_open_close = isset($body["atm_tomography_open_close"]) ? $body["atm_tomography_open_close"] : 0;
-        $lateral_left_tomography_open_close = isset($body["lateral_left_tomography_open_close"]) ? $body["lateral_left_tomography_open_close"] : 0;
-        $lateral_right_tomography_open_close = isset($body["lateral_right_tomography_open_close"]) ? $body["lateral_right_tomography_open_close"] : 0;
+            'packets', (
+                SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'id', p.id,
+                        'name', p.name,
+                        'price', sp.price,
+                        'services', IFNULL((
+                            SELECT JSON_ARRAYAGG(
+                                JSON_OBJECT(
+                                    'id', s2.id,
+                                    'name', s2.name,
+                                    'description', s2.description
+                                )
+                            )
+                            FROM packets_services ps
+                            INNER JOIN services s2 
+                                ON s2.id = ps.id_service
+                            WHERE ps.id_packet = p.id
+                              AND ps.active = 1
+                        ), JSON_ARRAY())
+                    )
+                )
+                FROM packets p
+                INNER JOIN subsidiaries_packets sp 
+                    ON sp.id_packet = p.id
+                WHERE p.active = 1
+                  AND sp.id_subsidiary = '$id_subsidiary_safe'
+            )
 
-        $ondemand = isset($body["ondemand"]) ? $body["ondemand"] : 0;
-        $dicom = isset($body["dicom"]) ? $body["dicom"] : 0;
-        $tomography_piece = isset($body["tomography_piece"]) ? $body["tomography_piece"] : NULL;
-        $implant = isset($body["implant"]) ? $body["implant"] : NULL;
-        $impacted_tooth = isset($body["impacted_tooth"]) ? $body["impacted_tooth"] : NULL;
-        $others_tomography = isset($body["others_tomography"]) ? $body["others_tomography"] : NULL;
-        $stl = isset($body["stl"]) ? $body["stl"] : 0;
-        $obj = isset($body["obj"]) ? $body["obj"] : 0;
-        $ply = isset($body["ply"]) ? $body["ply"] : 0;
-        $invisaligh = isset($body["invisaligh"]) ? $body["invisaligh"] : 0;
-        $others_scanners = isset($body["others_scanners"]) ? $body["others_scanners"] : NULL;
-        $maxilar_superior = isset($body["maxilar_superior"]) ? $body["maxilar_superior"] : 0;
-        $maxilar_inferior = isset($body["maxilar_inferior"]) ? $body["maxilar_inferior"] : 0;
-        $maxilar_both = isset($body["maxilar_both"]) ? $body["maxilar_both"] : 0;
-        $maxilar_others = isset($body["maxilar_others"]) ? $body["maxilar_others"] : NULL;
-        $dental_interpretation = isset($body["dental_interpretation"]) ? $body["dental_interpretation"] : 0;
-        
-        // Nuevas columnas status y method
-        $status = isset($body["status"]) ? $body["status"] : 'solicitado';
-        $method = isset($body["method"]) ? $body["method"] : 'por_definir';
+        ) AS data;
+    ";
 
-        $query = "INSERT INTO $name_table (
-                    id, folio_order, patient, birthdate, phone, doctor, address, professional_id, email, 
-                    acetate_print, paper_print, send_email, packet, rx_panoramic, rx_arc_panoramic, 
-                    rx_lateral_skull, ap_skull, pa_skull, paranasal_sinuses, atm_open_close, 
-                    profilogram, watters_skull, palmar_digit, others_radiography, occlusal_xray, 
-                    superior, inferior, complete_periapical, individual_periapical, conductometry, 
-                    clinical_photography, rickets, mcnamara, downs, jaraback, steiner, 
-                    others_analysis, analysis_bolton, analysis_moyers, others_models_analysis, 
-                    risina, dentalprint, 3d_risina, surgical_guide, studio_piece, 
-                    complete_tomography, two_jaws_tomography, maxilar_tomography, jaw_tomography, 
-                    snp_tomography, ear_tomography, atm_tomography_open_close, 
-                    lateral_left_tomography_open_close, lateral_right_tomography_open_close, ondemand,
-                    dicom, tomography_piece, implant, impacted_tooth, others_tomography, stl, obj, ply, 
-                    invisaligh, others_scanners, maxilar_superior, maxilar_inferior, maxilar_both, maxilar_others, dental_interpretation,
-                    status, method, active, created_at, updated_at
-                ) VALUES (
-                    '$id', '$folio_order', '$patient', '$birthdate', '$phone', '$doctor', '$address', 
-                    '$professional_id', '$email', $acetate_print, $paper_print, $send_email, 
-                    $packet, $rx_panoramic, $rx_arc_panoramic, $rx_lateral_skull, $ap_skull, $pa_skull, 
-                    $paranasal_sinuses, $atm_open_close, $profilogram, $watters_skull, 
-                    $palmar_digit, '$others_radiography', $occlusal_xray, $superior, $inferior, 
-                    $complete_periapical, $individual_periapical, $conductometry, 
-                    $clinical_photography, $rickets, $mcnamara, $downs, $jaraback, $steiner, 
-                    '$others_analysis', $analysis_bolton, $analysis_moyers, '$others_models_analysis', 
-                    $risina, $dentalprint, $three_d_risina, $surgical_guide, '$studio_piece', 
-                    $complete_tomography, $two_jaws_tomography, $maxilar_tomography, $jaw_tomography, 
-                    $snp_tomography, $ear_tomography, $atm_tomography_open_close, 
-                    $lateral_left_tomography_open_close, $lateral_right_tomography_open_close, '$ondemand',
-                    '$dicom', '$tomography_piece', '$implant', '$impacted_tooth', '$others_tomography', $stl, $obj, 
-                    $ply, $invisaligh, '$others_scanners', $maxilar_superior, $maxilar_inferior, $maxilar_both, 
-                    '$maxilar_others', $dental_interpretation, '$status', '$method', 1, NOW(), NOW()
-        );";
-       /*  echo $query;
-        die(); */
-        $sql = Helpers::connect()->query($query);
-       /*  $this->generateDocument($id); */
-        if (!$sql) {
-            throw new \Exception(mysqli_error(Helpers::connect()));
-        }
-        return $sql; // Return the query result
+    $result = Helpers::myQuery($sql);
 
-    }
+    return isset($result[0]['data'])
+        ? json_decode($result[0]['data'], true)
+        : [];
+}
 
     public function getAllActiveOrders()
     {
@@ -204,10 +156,6 @@ class Order extends Entity
         o.address,
         o.professional_id,
         o.email,
-        o.acetate_print,
-        o.paper_print,
-        o.send_email,
-        o.packet,
         o.rx_panoramic,
         o.rx_arc_panoramic,
         o.rx_lateral_skull,
@@ -267,6 +215,7 @@ class Order extends Entity
         o.dental_interpretation,
         o.status,
         o.method,
+        o.content,
         o.active AS order_active,
         o.created_at AS order_created_at,
         o.updated_at AS order_updated_at
@@ -366,10 +315,6 @@ class Order extends Entity
         o.address,
         o.professional_id,
         o.email,
-        o.acetate_print,
-        o.paper_print,
-        o.send_email,
-        o.packet,
         o.rx_panoramic,
         o.rx_arc_panoramic,
         o.rx_lateral_skull,
@@ -429,6 +374,7 @@ class Order extends Entity
         o.dental_interpretation,
         o.status,
         o.method,
+        o.content,
         o.active AS order_active,
         o.created_at AS order_created_at,
         o.updated_at AS order_updated_at

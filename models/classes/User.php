@@ -94,24 +94,13 @@ class User extends Entity
             die(); */
             if ($verify) {
                 $id = $instance['id'];
-                $sql = "SELECT 
-                        u.id AS user_id, 
-                        u.name AS user_name, 
-                        u.lastname AS user_lastname, 
-                        r.id AS role_id, 
-                        r.name AS role_name,
-                        GROUP_CONCAT(p.name SEPARATOR ', ') AS permissions 
-                    FROM users u
-                    INNER JOIN rols r ON u.id_rol = r.id
-                    INNER JOIN rols_permissions rp ON r.id = rp.id_rol
-                    INNER JOIN permissions p ON rp.id_permission = p.id
-                    WHERE u.id = '$id'
-                    AND u.active = 1 
-                    AND r.active = 1 
-                    AND rp.active = 1 
-                    AND p.active = 1
-                    GROUP BY u.id, r.id
-                    ORDER BY r.name;
+                $sql = "SELECT u.id AS user_id, u.name AS user_name, u.lastname AS user_lastname, r.id AS role_id, r.name AS role_name, GROUP_CONCAT(p.name SEPARATOR ', ') 
+                        AS permissions 
+                            FROM users u 
+                            INNER JOIN rols r ON u.id_rol = r.id 
+                            INNER JOIN rols_permissions rp ON r.id = rp.id_rol 
+                            INNER JOIN permissions p ON rp.id_permission = p.id 
+                            WHERE u.id = '$id' 
                     ";
                 /* echo $sql;
                 die(); */

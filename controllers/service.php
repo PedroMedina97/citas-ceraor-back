@@ -85,7 +85,7 @@ switch ($method) {
             case 'getbysubsidiary':
                 if (in_array('get_service', $permissionsArray)) {
                     $id = $router->getParam();
-                    $data = $instance->getServiceByIdSubsidiary($name_table, $id);
+                    $data = $instance->getServicesSubsidiary($id);
                     HTTPStatus::setStatus(200);
                     $response = [
                         "status" => "success",

@@ -83,6 +83,66 @@ switch ($method) {
                 }
                 echo json_encode($response);
             break;
+
+            case 'getservices':
+                if (in_array('get_subsidiary', $permissionsArray)) {
+                    $id = $router->getParam();
+                    $data = $instance->getServicesSubsidiary($id);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
+            case 'getpackets':
+                if (in_array('get_subsidiary', $permissionsArray)) {
+                    $id = $router->getParam();
+                    $data = $instance->getPacketsSubsidiary($id);
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
+            case 'getallservices':
+                if (in_array('get_subsidiary', $permissionsArray) || in_array('getall_service', $permissionsArray)) {
+                    $data = $instance->getAllServices();
+                    HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+                } else {
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
             default:
                 HTTPStatus::setStatus(404);
                 $response = [
@@ -132,6 +192,120 @@ switch ($method) {
                         "msg" => HTTPStatus::getMessage(200),
                         "data" => $data
                     ];
+                }
+                else{
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
+            case 'setservices':
+                if(in_array('update_subsidiary', $permissionsArray)){
+                    $id = $router->getParam();
+                    
+                    if($id && isset($body['services']) && is_array($body['services'])){
+                        // Validar que cada servicio tenga id_service y price
+                        $valid = true;
+                        foreach($body['services'] as $service){
+                            if(!isset($service['id_service']) || !isset($service['price'])){
+                                $valid = false;
+                                break;
+                            }
+                        }
+                        
+                        if($valid){
+                            $result = $instance->setServices($id, $body['services']);
+                            
+                            if($result['success']){
+                                HTTPStatus::setStatus(200);
+                                $response = [
+                                    "status" => "success",
+                                    "msg" => "Servicios actualizados correctamente",
+                                    "data" => $result
+                                ];
+                            } else {
+                                HTTPStatus::setStatus(500);
+                                $response = [
+                                    "status" => false,
+                                    "msg" => "Error al actualizar servicios",
+                                    "error" => $result['error']
+                                ];
+                            }
+                        } else {
+                            HTTPStatus::setStatus(400);
+                            $response = [
+                                "status" => false,
+                                "msg" => "Cada servicio debe contener id_service y price"
+                            ];
+                        }
+                    } else {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => "Parámetros inválidos. Se requiere id en la URL y services (array) en el body"
+                        ];
+                    }
+                }
+                else{
+                    HTTPStatus::setStatus(401);
+                    $response = [
+                        "status" => false,
+                        "msg" => HTTPStatus::getMessage(401)
+                    ];
+                }
+                echo json_encode($response);
+            break;
+
+            case 'setpackets':
+                if(in_array('update_subsidiary', $permissionsArray)){
+                    $id = $router->getParam();
+                    
+                    if($id && isset($body['packets']) && is_array($body['packets'])){
+                        // Validar que cada paquete tenga id_packet y price
+                        $valid = true;
+                        foreach($body['packets'] as $packet){
+                            if(!isset($packet['id_packet']) || !isset($packet['price'])){
+                                $valid = false;
+                                break;
+                            }
+                        }
+                        
+                        if($valid){
+                            $result = $instance->setPackets($id, $body['packets']);
+                            
+                            if($result['success']){
+                                HTTPStatus::setStatus(200);
+                                $response = [
+                                    "status" => "success",
+                                    "msg" => "Paquetes actualizados correctamente",
+                                    "data" => $result
+                                ];
+                            } else {
+                                HTTPStatus::setStatus(500);
+                                $response = [
+                                    "status" => false,
+                                    "msg" => "Error al actualizar paquetes",
+                                    "error" => $result['error']
+                                ];
+                            }
+                        } else {
+                            HTTPStatus::setStatus(400);
+                            $response = [
+                                "status" => false,
+                                "msg" => "Cada paquete debe contener id_packet y price"
+                            ];
+                        }
+                    } else {
+                        HTTPStatus::setStatus(400);
+                        $response = [
+                            "status" => false,
+                            "msg" => "Parámetros inválidos. Se requiere id en la URL y packets (array) en el body"
+                        ];
+                    }
                 }
                 else{
                     HTTPStatus::setStatus(401);
