@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: php_api
+    container_name: php_ceraor_api
     ports:
       - "8080:80"
     volumes:
@@ -16,10 +16,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ceraor3d
-      MYSQL_USER: root
-      MYSQL_PASSWORD:
-    ports:
-      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
 

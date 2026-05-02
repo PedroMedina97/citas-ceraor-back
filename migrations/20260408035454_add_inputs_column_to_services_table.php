@@ -20,7 +20,9 @@ final class AddInputsColumnToServicesTable extends AbstractMigration
     public function change(): void
     {
         $table = $this->table('services');
-        $table->addColumn('inputs', 'string', ['limit' => 255, 'null' => true, 'after' => 'description'])
-              ->update();
+        if (!$table->hasColumn('inputs')) {
+            $table->addColumn('inputs', 'string', ['limit' => 255, 'null' => true, 'after' => 'description'])
+                  ->update();
+        }
     }
 }
