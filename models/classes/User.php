@@ -33,14 +33,14 @@ class User extends Entity
     ) {
         $db = Helpers::connect();
         // Escapar usando la MISMA conexión ($db)
-        $parentId = mysqli_real_escape_string($db, $parentId);
-        $name     = mysqli_real_escape_string($db, $name);
-        $lastname = mysqli_real_escape_string($db, $lastname);
-        $email    = mysqli_real_escape_string($db, $email);
-        $birthday = mysqli_real_escape_string($db, $birthday);
-        $phone    = mysqli_real_escape_string($db, $phone);
-        $related  = mysqli_real_escape_string($db, $related);
-        $address  = mysqli_real_escape_string($db, $address);
+        $parentId = \mysqli_real_escape_string($db, $parentId);
+        $name     = \mysqli_real_escape_string($db, $name);
+        $lastname = \mysqli_real_escape_string($db, $lastname);
+        $email    = \mysqli_real_escape_string($db, $email);
+        $birthday = \mysqli_real_escape_string($db, $birthday);
+        $phone    = \mysqli_real_escape_string($db, $phone);
+        $related  = \mysqli_real_escape_string($db, $related);
+        $address  = \mysqli_real_escape_string($db, $address);
 
         // Hash de contraseña
         $pass = password_hash($pass, PASSWORD_BCRYPT, ['cost' => 4]);
@@ -84,7 +84,7 @@ class User extends Entity
 
     public function login(string $email, string $password)
     {
-        $email = mysqli_real_escape_string(Helpers::connect(), $email);
+        $email = \mysqli_real_escape_string(Helpers::connect(), $email);
         $user = Helpers::connect()->query("SELECT * FROM users WHERE email = '$email' AND active = 1");
 
         if ($user && $user->num_rows === 1) {
@@ -140,12 +140,12 @@ class User extends Entity
     public function createUser(string $parent_id, string $name, string $lastname, string $email, string $pass, $birthday)
     {
         global $db;
-        $name = mysqli_real_escape_string(Helpers::connect(), $name);
-        $lastname = mysqli_real_escape_string(Helpers::connect(), $lastname);
-        $birthday = mysqli_real_escape_string(Helpers::connect(), $birthday);
-        $email = mysqli_real_escape_string(Helpers::connect(), $email);
+        $name = \mysqli_real_escape_string(Helpers::connect(), $name);
+        $lastname = \mysqli_real_escape_string(Helpers::connect(), $lastname);
+        $birthday = \mysqli_real_escape_string(Helpers::connect(), $birthday);
+        $email = \mysqli_real_escape_string(Helpers::connect(), $email);
         $pass = password_hash(($pass), PASSWORD_BCRYPT, ['cost' => 4]);
-        $birthday = mysqli_real_escape_string(Helpers::connect(), $birthday);
+        $birthday = \mysqli_real_escape_string(Helpers::connect(), $birthday);
 
         $key = new Key();
         $id = $key->generate_uuid();
@@ -179,14 +179,14 @@ class User extends Entity
     public function updateUser(string $id, $body)
     {
         $db = Helpers::connect();
-        $name = mysqli_real_escape_string($db, $body['name']);
-        $lastname = mysqli_real_escape_string($db, $body['lastname']);
-        $email = mysqli_real_escape_string($db, $body['email']);
+        $name = \mysqli_real_escape_string($db, $body['name']);
+        $lastname = \mysqli_real_escape_string($db, $body['lastname']);
+        $email = \mysqli_real_escape_string($db, $body['email']);
         $pass = password_hash(($body['password']), PASSWORD_BCRYPT, ['cost' => 4]);
-        $birthday = mysqli_real_escape_string($db, $body['birthday']);
-        $phone = mysqli_real_escape_string($db, $body['phone']);
-        $address = mysqli_real_escape_string($db, $body['address']);
-        $id_rol = mysqli_real_escape_string($db, $body['id_rol']);
+        $birthday = \mysqli_real_escape_string($db, $body['birthday']);
+        $phone = \mysqli_real_escape_string($db, $body['phone']);
+        $address = \mysqli_real_escape_string($db, $body['address']);
+        $id_rol = \mysqli_real_escape_string($db, $body['id_rol']);
         $query = "UPDATE users SET name = '$name', lastname = '$lastname', email = '$email', password = '$pass', birthday = '$birthday', phone = '$phone', address = '$address', id_rol = '$id_rol', updated_at = NOW() WHERE id = '$id'";
         /* echo($query);
         die(); */
@@ -209,7 +209,7 @@ class User extends Entity
 
     private function getUserByEmail(string $email)
     {
-        $email = mysqli_real_escape_string(Helpers::connect(), $email);
+        $email = \mysqli_real_escape_string(Helpers::connect(), $email);
         $user = Helpers::connect()->query("SELECT * FROM users WHERE email = '$email'");
         if ($user && $user->num_rows == 1) {
             return $user->fetch_assoc();
@@ -237,17 +237,17 @@ class User extends Entity
         $db = Helpers::connect();
         
         // Sanitizar entradas
-        $parentId = mysqli_real_escape_string($db, $parentId);
-        $name = mysqli_real_escape_string($db, $name);
-        $lastname = mysqli_real_escape_string($db, $lastname);
-        $birthday = mysqli_real_escape_string($db, $birthday);
-        $phone = mysqli_real_escape_string($db, $phone);
-        $address = mysqli_real_escape_string($db, $address);
+        $parentId = \mysqli_real_escape_string($db, $parentId);
+        $name = \mysqli_real_escape_string($db, $name);
+        $lastname = \mysqli_real_escape_string($db, $lastname);
+        $birthday = \mysqli_real_escape_string($db, $birthday);
+        $phone = \mysqli_real_escape_string($db, $phone);
+        $address = \mysqli_real_escape_string($db, $address);
         
         try {
             // Verificar email si se proporciona
             if ($email !== null) {
-                $email = mysqli_real_escape_string($db, $email);
+                $email = \mysqli_real_escape_string($db, $email);
                 $exists_email = $db->query("SELECT 1 FROM users WHERE email = '$email' LIMIT 1");
                 if ($exists_email && $exists_email->num_rows > 0) {
                     return ['error' => true, 'message' => 'El email ya existe'];
