@@ -121,12 +121,38 @@ class Order extends Entity
 
     public function getAllActiveOrders()
     {
-        $sql = "SELECT o.*, 
-                a.code AS appointment_code
-                FROM orders o
-                LEFT JOIN appointments a ON a.id_order = o.id
-                WHERE o.active = 1
-                ORDER BY o.created_at DESC;";
+        $sql = "
+                SELECT 
+            o.id,
+            o.folio_order,
+            o.patient,
+            o.doctor,
+            o.status,
+            o.method,
+            o.created_at,
+
+            a.id AS appointment_id,
+            a.appointment,
+            
+            COALESCE(SUM(p.amount), 0) AS total_paid
+
+        FROM orders o
+
+        LEFT JOIN appointments a 
+            ON a.id_order = o.id AND a.active = 1
+
+        LEFT JOIN payments p 
+            ON p.id_appointment = a.id AND p.active = 1
+
+        WHERE o.active = 1
+
+        GROUP BY 
+            o.id, o.folio_order, o.patient, o.doctor, 
+            o.status, o.method, o.created_at,
+            a.id, a.appointment
+
+        ORDER BY o.created_at DESC;
+        ";
         return Helpers::myQuery($sql);    
     }
 
@@ -239,7 +265,70 @@ class Order extends Entity
 
     public function getDetailsById(String $id)
     {
-        $query = "SELECT *  FROM orders WHERE id='$id' AND active =1 LIMIT 1;";
+        $query = "
+                        SELECT 
+                -- Orden
+                o.id AS order_id,
+                o.folio_order,
+                o.patient,
+                o.birthdate,
+                o.phone,
+                o.doctor,
+                o.email,
+                o.status,
+                o.method,
+                o.content,
+                o.created_at AS order_created_at,
+
+                -- Cita
+                a.id AS appointment_id,
+                a.appointment,
+                a.end_appointment,
+                a.client,
+                a.personal,
+                a.service AS service_id,
+                a.id_subsidiary,
+
+                -- Servicio
+                s.name AS service_name,
+                c.name AS category_name,
+
+                -- Sucursal
+                sub.name AS subsidiary_name,
+                sub.address AS subsidiary_address,
+
+                -- Pagos
+                p.id AS payment_id,
+                p.method AS payment_method,
+                p.amount,
+                p.status AS payment_status,
+
+                -- Notas
+                n.description AS note
+
+            FROM orders o
+
+            LEFT JOIN appointments a 
+                ON a.id_order = o.id AND a.active = 1
+
+            LEFT JOIN services s 
+                ON s.id = a.service AND s.active = 1
+
+            LEFT JOIN categories c 
+                ON c.id = s.id_category AND c.active = 1
+
+            LEFT JOIN subsidiaries sub 
+                ON sub.id = a.id_subsidiary AND sub.active = 1
+
+            LEFT JOIN payments p 
+                ON p.id_appointment = a.id AND p.active = 1
+
+            LEFT JOIN notes n 
+                ON n.id_order = o.id AND n.active = 1
+
+            WHERE o.id = '$id'
+            AND o.active = 1;
+        ";
         return Helpers::myQuery($query);
     }
 

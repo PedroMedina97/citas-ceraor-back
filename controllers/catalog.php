@@ -64,7 +64,33 @@ switch ($method) {
              
                 echo json_encode($response);
             break;
-            case'getsubsidiaries':
+
+            case 'getServicesBySubsidiary':
+                $id_subsidiary = $router->getParam();
+                $data = $instance->getCatalogServicesByIdSubsidiary($id_subsidiary);
+                HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+             
+                echo json_encode($response);
+            break;
+
+            case 'getPacketsBySubsidiary':
+                $id_subsidiary = $router->getParam();
+                $data = $instance->getPacketsByIdSubsidiary($id_subsidiary);
+                HTTPStatus::setStatus(200);
+                    $response = [
+                        "status" => "success",
+                        "msg" => HTTPStatus::getMessage(200),
+                        "data" => $data
+                    ];
+             
+                echo json_encode($response);
+            break;
+            case 'getsubsidiaries':
                 $data = $instance->getCatalog("subsidiaries");
                 HTTPStatus::setStatus(200);
                     $response = [

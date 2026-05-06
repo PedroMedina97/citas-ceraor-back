@@ -58,7 +58,7 @@ switch ($method) {
         switch ($path) {
             case 'getall':
                 if (in_array('getall_order', $permissionsArray)) {
-                    $data = $instance->getAllActiveOrders($name_table);
+                    $data = $instance->getAllActiveOrders();
                     HTTPStatus::setStatus(200);
                     $response = [
                         "status" => "success",
